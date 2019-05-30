@@ -28,7 +28,7 @@ library(scales)
 library(stringr)
 library(wesanderson)
 
-BASE_DIR = '/Volumes/datasets_1/human_sequence_prostate_WGBS/reproduce'
+BASE_DIR = '/notebook/human_sequence_prostate_WGBS/reproduce/WCDT_WGBS'
 make_path = function(BASE_DIR, s){
     paste(BASE_DIR, s, sep='/' )
 }
@@ -77,8 +77,8 @@ fns_methylseqR = list.files(dir_methylseqR, pattern="UMRsLMRs.txt", full.names=F
 
 fn_treatment = make_path(BASE_DIR, 'metadata/clinical/treatment.txt' )
 fn_array_27k = make_path(BASE_DIR, 'secondary_data/illumina_methylation_array_coverage/hm27.hg38.slim.tsv' )
-fn_array_450k = make_path(BASE_DIR, 'metadata/illumina_methylation_array_coverage/hm450.hg38.slim.tsv' )
-fn_array_epic = make_path(BASE_DIR, 'metadata/illumina_methylation_array_coverage/EPIC.hg38.slim.tsv' )
+fn_array_450k = make_path(BASE_DIR, 'secondary_data/illumina_methylation_array_coverage/hm450.hg38.slim.tsv' )
+fn_array_epic = make_path(BASE_DIR, 'secondary_data/illumina_methylation_array_coverage/EPIC.hg38.slim.tsv' )
 
 fn_wgs_sample_summary = make_path(BASE_DIR, 'metadata/WGS_sample_summary.txt' )
 fn_tumor_purity = make_path(BASE_DIR, 'metadata/WGS_tumor_purity_AF_012318.csv' )
@@ -447,7 +447,7 @@ for(i in 1:length(final_hmr_list)) {
 names(hmr) = toupper(names(hmr))
 names(hmrlengths) = toupper(names(hmrlengths))
 names(hmrwidths) = toupper(names(hmrwidths))
-hmr = hmr[c(sample_ids,samples_normal,'DTB-053-RP',upitt_benign_prostate,upitt_localized_tumor)]
+hmr = hmr[c(sample_ids_wgbs,samples_normal,'DTB-053-RP',samples_upitt_benign_prostate,samples_upitt_localized_tumor)]
 
 # Load methylation array data
 #------------------------------------------------------------------------------------------------------------------
