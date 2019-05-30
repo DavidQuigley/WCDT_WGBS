@@ -147,23 +147,6 @@ gencode_noncoding = c('vaultRNA','3prime_overlapping_ncRNA','antisense',
 txresponse = read.table(fn_treatment, header=T, sep='\t',
                          row.names=1, stringsAsFactors=F, strip.white=T)
 rownames(txresponse) = convertClinSamplenames(rownames(txresponse))
-txresponse$enza = grepl('enzalutamide', tolower(txresponse$Post.Biopsy.Systemic.Treatment), fixed=T)
-txresponse$abi = grepl('abiraterone', tolower(txresponse$Post.Biopsy.Systemic.Treatment), fixed=T)
-txresponse$taxol = grepl('taxel', tolower(txresponse$Post.Biopsy.Systemic.Treatment), fixed=T)
-txresponse$plat = grepl('platin', tolower(txresponse$Post.Biopsy.Systemic.Treatment), fixed=T)
-txresponse$psa = rep(NA,dim(txresponse)[1])
-txresponse$psa[txresponse$PSA.response=='> 90%'] = '90+'
-txresponse$psa[txresponse$PSA.response=='>90%'] = '90+'
-txresponse$psa[txresponse$PSA.response=='0-30%'] = '0-30'
-txresponse$psa[txresponse$PSA.response=='0%-30%'] = '0-30'
-txresponse$psa[txresponse$PSA.response=='30-50%'] = '30-50'
-txresponse$psa[txresponse$PSA.response=='30%-50%'] = '30-50'
-txresponse$psa[txresponse$PSA.response=='43.6'] = '30-50'
-txresponse$psa[txresponse$PSA.response=='50-90%'] = '50-90'
-txresponse$psa[txresponse$PSA.response=='No Decline'] = '0-30'
-txresponse$psa[txresponse$PSA.response=='none'] = '0-30'
-txresponse$psa[txresponse$PSA.response=='None'] = '0-30'
-txresponse$psa = factor(txresponse$psa, ordered=T)
 
 # Locations of each metastatic tumor in the patient's body
 #------------------------------------------------------------------------------------------------------
