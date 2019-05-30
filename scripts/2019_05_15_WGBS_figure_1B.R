@@ -77,7 +77,7 @@ TP53[toplot$TP53] = 'gray30'
 stopifnot(length(TP53)==length(samples_plot))
 
 CMP = colside
-CMP[samples_cmp] = 'mediumturquoise'#'lightsteelblue'
+CMP[samples_cmp] = 'white'#'lightsteelblue'
 CMP[samples_braf] = 'orange'
 CMP[samples_idh1] = 'green'
 CMP[samples_tet2] = 'purple'
@@ -92,7 +92,7 @@ Site[intersect(names(metastasis_locations)[metastasis_locations=='Liver'],sample
 Site[intersect(names(metastasis_locations)[metastasis_locations=='Other'],samples_plot)] = wes_palette('Chevalier1')[3] #gray
 
 purity = colside
-purity[tumorpurity[colnames(mat),'Tumor.Purity.Histo']<50] = 'black'
+purity[tumorpurity[colnames(mat_hmr_recurrent),'Tumor.Purity.Histo']<50] = 'black'
 stopifnot(length(purity)==length(samples_plot))
 
 csidebar = cbind(Site,CMP,tSCNC,TP53,RB1,PTEN,MYC,ETS)
