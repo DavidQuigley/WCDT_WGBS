@@ -1,0 +1,318 @@
+Patient ID	Biopsy Date	Biopsy site
+DTB-001	2/22/13	Bone
+DTB-002	12/21/12	Liver
+DTB-003	2/22/13	Liver
+DTB-004	2/26/13	Liver
+DTB-005	3/15/13	Bone
+DTB-007	3/26/13	Liver
+DTB-008	4/2/13	Bone
+DTB-009	4/10/13	Bone
+DTB-010	4/25/13	Bone
+DTB-010Pro	8/4/14	Liver
+DTB-011	4/29/13	Lymph node
+DTB-013	5/6/13	Bone
+DTB-014	5/13/13	Bone
+DTB-014Pro	10/9/14	Lymph node
+DTB-015	5/29/13	Bone
+DTB-016	6/3/13	Bone
+DTB-016Pro	4/24/14	Soft tissue
+DTB-018	6/18/13	Lymph node
+DTB-018Pro	10/6/14	Lymph node
+DTB-019	6/18/13	Bone
+DTB-019pro	12/18/13	Bone
+DTB-020	6/25/13	Liver
+DTB-021	6/26/13	Bone
+DTB-021Pro	1/23/17	Bone
+DTB-022	6/25/13	Bone
+DTB-022Pro	3/3/15	Bone
+DTB-022Pro2	5/27/15	Bone
+DTB-023	6/28/13	Lymph node
+DTB-024	7/8/13	Bone
+DTB-024Pro	10/15/13	Liver
+DTB-024Pro2	1/22/14	Liver
+DTB-026	7/10/13	Bone
+DTB-026Pro	8/7/14	Bone
+DTB-027	7/24/13	Lymph node
+DTB-028	7/29/13	Bone
+DTB-030	8/7/13	Lung
+DTB-031	8/13/13	Bone
+DTB-032	8/21/13	Lymph node
+DTB-033	8/27/13	Lymph node
+DTB-033Pro	6/25/14	Lymph node
+DTB-034	8/28/13	Lymph node
+DTB-035	8/28/13	Lymph node
+DTB-036	9/4/13	Lymph node
+DTB-037	9/5/13	Bone
+DTB-038	9/10/13	Bone
+DTB-039	9/16/13	Lymph node
+DTB-040	9/16/13	Liver
+DTB-041	9/25/13	Lymph node
+DTB-042	10/29/13	Bone
+DTB-043	10/21/13	Lymph node
+DTB-044	10/28/13	Lymph node
+DTB-045	10/31/13	Bone
+DTB-046	10/22/13	Bone
+DTB-047	10/31/13	Bone
+DTB-049	10/30/13	Liver
+DTB-050	11/6/13	Liver
+DTB-052	11/13/13	Bone
+DTB-053	11/25/13	Bone
+DTB-055	11/18/13	Bone
+DTB-055Pro	5/2/14	Brain
+DTB-056	12/2/13	Bone
+DTB-057	11/26/13	Bone
+DTB-058	12/4/13	Bone
+DTB-059	12/3/13	Liver
+DTB-060	12/4/13	L Adrenal
+DTB-060Pro	2/26/15	L Adrenal
+DTB-061	12/10/13	Liver
+DTB-062	12/10/13	Bone
+DTB-063	12/12/13	Lymph node
+DTB-063Pro	12/15/14	Lymph node
+DTB-064	12/16/13	Bone
+DTB-065	12/17/13	Lymph node
+DTB-067	12/17/13	Bone
+DTB-067Pro	7/22/14	Liver
+DTB-068	1/8/14	Bone
+DTB-069	1/7/14	Lymph node
+DTB-070	1/27/14	Bone
+DTB-071	1/15/14	Lymph node
+DTB-072	1/28/14	Lymph node
+DTB-073	1/29/14	Bone
+DTB-073Pro	3/24/14	Bone
+DTB-074	3/4/14	Bone
+DTB-075	2/4/14	Soft tissue
+DTB-076	2/17/14	Liver
+DTB-077	2/19/14	Bone
+DTB-77Pro	5/22/15	Bone
+DTB-078	2/19/14	Bone
+DTB-079	3/5/14	Lymph node
+DTB-080	3/11/14	Lymph node
+DTB-080Pro	12/4/14	Lymph node
+DTB-081	3/24/14	Liver
+DTB-082	4/2/14	Lymph node
+DTB-083	4/8/14	Lymph node
+DTB-084	4/9/14	Bone
+DTB-085	4/17/14	Lymph node
+DTB-086	4/16/14	Bone
+DTB-087	4/21/14	Bone
+DTB-087Pro	8/25/15	Bone
+DTB-088	4/22/14	Bone
+DTB-089	4/23/14	Bone
+DTB-089Pro	7/23/14	Liver
+DTB-090	5/7/14	Lymph node
+DTB-090Pro	1/20/15	Lymph node
+DTB-091	5/13/14	Bone
+DTB-092	5/21/14	Bone
+DTB-093	5/27/14	Lymph node
+DTB-094	6/18/14	Lymph node
+DTB-095-1	5/29/14	Adrenal
+DTB-095-2	5/30/14	Bone
+DTB-096	6/2/14	Bone
+DTB-096Pro	9/30/14	Bone
+DTB-097	6/3/14	Bone
+DTB-097Pro	2/9/15	Liver
+DTB-098	6/3/14	Lymph node
+DTB-098Pro	2/8/16	Lymph node
+DTB-098Pro2	6/2/16	Lymph node
+DTB-099	6/9/14	Bone
+DTB-099Pro	7/20/15	Bone
+DTB-100	6/17/14	Lymph node
+DTB-101	6/25/14	Soft tissue
+DTB-102	6/24/14	Bladder
+DTB-102Pro	12/9/15	L RP soft tissue
+DTB-103	7/1/14	Bladder
+DTB-103Pro	10/1/14	Bladder
+DTB-104	7/2/14	Lymph node
+DTB-105	6/30/14	Bone
+DTB-106	6/30/14	Bone
+DTB-107	7/16/14	Bone
+DTB-108	7/9/14	Bone
+DTB-109	7/16/14	Bone
+DTB-110	7/16/14	Lymph node
+DTB-111	8/11/14	Lymph node
+DTB-111Pro	12/23/14	Lymph node
+DTB-112	8/13/14	Lymph node
+DTB-113	8/12/14	Bone
+DTB-114	8/19/14	Bone
+DTB-115	9/2/14	Lymph node
+DTB-115Pro	7/30/15	Bone
+DTB-116	9/9/14	Liver
+DTB-117	9/9/14	Lymph node
+DTB-118	9/29/14	Bone
+DTB-119	10/8/14	Bone
+DTB-119Pro	10/8/15	Bone
+DTB-120	10/7/14	Lung
+DTB-121	10/22/14	Liver
+DTB-122	10/16/14	Bone
+DTB-123Pro	5/5/16	Bone
+DTB-124	10/28/14	Bone
+DTB-125	11/3/14	Bone
+DTB-126	12/23/14	Bone
+DTB-127	11/3/14	Lymph node
+DTB-127Pro		Lymph node
+DTB-128	11/10/14	Bone
+DTB-128Pro	10/28/15	Bone
+DTB-129	11/17/14	Lymph node
+DTB-129Pro	2/1/16	Bone
+DTB-130	11/18/14	Soft tissue
+DTB-130ProB	4/17/15	Soft tissue
+DTB-130ProX	4/17/15	Bone
+DTB-131	11/19/14	Lymph node
+DTB-132	11/19/14	RP soft tissue
+DTB-133	12/9/14	Bone
+DTB-134	12/30/14	Bone
+DTB-134Pro	3/16/15	Bone
+DTB-135	12/15/14	Lymph node
+DTB-135Pro	2/26/15	Lymph node
+DTB-136	12/16/14	Bone
+DTB-137	12/23/14	Bone
+DTB-137Pro	3/8/16	Bone
+DTB-138	12/29/14	Umbilical/soft tissue
+DTB-139	1/14/15	Bone
+DTB-140	1/8/15	Bone
+DTB-141	1/9/15	Bone
+DTB-141Pro	10/21/15	Bone
+DTB-142	1/27/15	Bone
+DTB-143	1/22/15	Bone
+DTB-144	2/3/15	Bone
+DTB-145	2/5/15	Bone
+DTB-146	2/6/15	Bone
+DTB-147	2/12/15	Lymph node
+DTB-148	2/12/15	Bone
+DTB-149	2/17/15	Bone
+DTB-149Pro	11/6/15	Bone
+DTB-150	2/25/15	Bone
+DTB-151	3/17/15	Lymph node
+DTB-153	3/23/15	Bone
+DTB-154	4/9/15	Bone
+DTB-155	4/8/15	Liver
+DTB-156	4/13/15	Bone
+DTB-157	4/21/15	Bone
+DTB-157Pro	7/17/15	Bone
+DTB-158	4/14/15	Bone
+DTB-159	4/16/15	Bone
+DTB-160	5/6/15	Bone
+DTB-161	6/4/15	Bone
+DTB-162	5/28/15	Bone
+DTB-163	6/3/15	Bone
+DTB-164	6/3/15	Lymph node
+DTB-165	6/8/15	Bone
+DTB-165Pro	11/30/16	Bone
+DTB-166	6/8/15	Lymph node
+DTB-167	6/17/15	Lymph node
+DTB-168	6/17/15	Bone
+DTB-169	7/2/15	Bone
+DTB-170	7/6/15	Lymph node
+DTB-171	7/13/15	Lymph node
+DTB-172	7/14/15	Bone
+DTB-173	7/14/15	Lymph node
+DTB-174	7/17/15	Liver
+DTB-175	7/28/15	Liver
+DTB-176	8/6/15	Soft tissue
+DTB-176Pro	5/25/16	Soft tissue
+DTB-176Pro2	9/1/16	Soft tissue
+DTB-176Pro3	1/19/17	Other (right ischioanal fossa mass )
+DTB-177	8/28/15	Bone
+DTB-177Pro	12/2/16	Liver
+DTB-178	9/1/15	Bone
+DTB-179	8/31/15	Bone
+DTB-180	9/2/15	Lung
+DTB-181	9/8/15	Bone
+DTB-182	9/10/15	Bone
+DTB-183	9/17/15	Lymph node
+DTB-184	9/29/15	Bone
+DTB-185	10/21/15	Bone
+DTB-186	10/22/15	Lymph node
+DTB-187	11/3/15	Bone
+DTB-187Pro	11/9/17	Bone
+DTB-188	9/28/15	Bone
+DTB-188Pro	4/26/17	Bone
+DTB-189	11/5/15	Lymph node
+DTB-190	11/9/15	Lymph node
+DTB-191	11/18/15	Bone
+DTB-192	11/24/15	Bone
+DTB-193	11/30/15	Lymph node
+DTB-194	11/25/15	Bone
+DTB-194Pro	2/21/16	Bone
+DTB-195	11/25/15	Bone
+DTB-196	12/15/15	Bone
+DTB-197	12/9/15	Bone
+DTB-198	1/8/16	Bone
+DTB-199	12/16/15	Bone
+DTB-200	1/6/16	Other
+DTB-201	1/11/16	Bone
+DTB-201Pro	4/29/16	Lymph node
+DTB-202	1/20/16	Liver
+DTB-203	1/20/16	Liver
+DTB-204	1/20/16	Bone
+DTB-205	2/2/16	Lymph node
+DTB-206	2/4/16	Lymph node
+DTB-208	3/1/16	Bone
+DTB-209	2/25/16	Lung
+DTB-210	3/4/16	Bone
+DTB-210Pro	9/20/16	Bone
+DTB-211	3/4/16	Liver
+DTB-212	3/11/16	Lymph node
+DTB-213	3/21/16	Lymph node
+DTB-214	3/25/16	Bone
+DTB-215	3/28/16	Bone
+DTB-216	4/4/16	Bone
+DTB-216Pro	9/30/16	Bone
+DTB-217	4/6/16	Bone
+DTB-218	4/22/16	Other
+DTB-219	4/20/16	Lymph node
+DTB-220	4/25/16	Other
+DTB-221	5/10/16	Bone
+DTB-222	5/16/16	Lymph node
+DTB-223	5/18/16	Lymph node
+DTB-223Pro	10/24/16	Bone
+DTB-224	5/24/16	Bone
+DTB-225	5/24/16	Bone
+DTB-226	6/24/16	Lymph node
+DTB-227	6/28/16	Bone
+DTB-227Pro	9/14/17	Lymph node
+DTB-228	6/29/16	Bone
+DTB-229	7/12/16	Lymph node
+DTB-230	7/26/16	Bone
+DTB-231	7/19/16	Liver
+DTB-232	8/15/16	Bone
+DTB-232Pro	12/7/16	Bone
+DTB-233	9/1/16	Lymph node
+DTB-234	9/6/16	Lymph node
+DTB-235	9/16/16	Soft tissue
+DTB-237	9/21/16	Bone
+DTB-238	9/27/16	Bone
+DTB-238Pro	12/11/17	Lymph node
+DTB-239	9/29/16	Liver
+DTB-240	10/12/16	Lymph node
+DTB-241	10/14/16	Liver
+DTB-242	10/19/16	Liver
+DTB-243	10/19/16	Lymph node
+DTB-244	10/24/16	Bone
+DTB-245	11/16/16	Bone
+DTB-246	11/28/16	Lymph node
+DTB-247	12/14/16	Bone
+DTB-248	12/20/16	Liver
+DTB-249	12/21/16	Liver
+DTB-250	12/28/16	Lymph node
+DTB-251	1/20/17	Bone
+DTB-252	1/27/17	Lymph node
+DTB-254	1/27/17	Soft tissue - adrenal mass
+DTB-254Pro	8/18/17	Soft tissue - adrenal mass
+DTB-255	2/13/17	Lymph node
+DTB-256	2/8/17	Bone
+DTB-257	2/28/17	Lymph node
+DTB-258	3/8/17	Bone
+DTB-259	3/9/17	Bone
+DTB-260	3/14/17	Bone
+DTB-261	3/27/17	Bone
+DTB-262	4/12/17	Bone
+DTB-263	5/3/17	Bone
+DTB-264	5/8/17	Bone
+DTB-265	5/26/17	Lymph node
+DTB-265Pro	9/8/17	Lymph node
+DTB-266	5/26/17	Bone
+DTB-267	5/31/17	Bone
+DTB-268	6/30/17	Bone
+DTB-269	11/6/17	Lymph node
