@@ -186,8 +186,7 @@ samples_upitt_localized_tumor = toupper(samples_upitt_localized_tumor)
 
 samples_normal = c('NT-DTB-003-BL','NT-DTB-021-BL','NT-DTB-035-BL','NT-DTB-037-BL',
                     'NT-DTB-074-BL','NT-DTB-104-BL','NT-DTB-124-BL')
-samples_normal = c(samples_normal,'NT-DTB-077-Pro','NT-DTB-091-BL',
-                    'NT-DTB-137-Pro','NT-DTB-176-BL','NT-DTB-188-BL','NT-DTB-194-Pro')
+samples_normal = c(samples_normal,'NT-DTB-077-Pro','NT-DTB-188-BL','NT-DTB-194-Pro')
 #removed 008,020,042,102,112,205,261
 samples_normal = toupper(samples_normal)
 locs_normal = metastasis_locations[gsub('NT-','',samples_normal)]
@@ -423,7 +422,8 @@ for(curfile in fns_methylseqR) {
     curfile_data = extract_methylseqR_metadata(curfile)
     curfile = paste(dir_methylseqR,curfile,sep='')
     curtab = read.delim(file=curfile,sep='\t',header=T,stringsAsFactors=F)
-    all_hmrs[[curfile_data$sname]][[curfile_data$chr]] = curtab
+    #all_hmrs[[curfile_data$sname]][[curfile_data$chr]] = curtab
+    all_hmrs[[ toupper(curfile_data$sname)]][[curfile_data$chr]] = curtab
 }
 for(i in 1:length(all_hmrs)){
     if(length(all_hmrs[[i]])!=24) {
@@ -447,7 +447,7 @@ for(i in 1:length(final_hmr_list)) {
 names(hmr) = toupper(names(hmr))
 names(hmrlengths) = toupper(names(hmrlengths))
 names(hmrwidths) = toupper(names(hmrwidths))
-hmr = hmr[c(sample_ids_wgbs,samples_normal,'DTB-053-RP',samples_upitt_benign_prostate,samples_upitt_localized_tumor)]
+hmr = hmr[c(sample_ids_wgbs,samples_normal,samples_upitt_benign_prostate,samples_upitt_localized_tumor)]
 
 # Load methylation array data
 #------------------------------------------------------------------------------------------------------------------
