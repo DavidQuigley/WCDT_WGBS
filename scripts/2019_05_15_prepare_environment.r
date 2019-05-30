@@ -86,7 +86,7 @@ fn_manta_slim = make_path(BASE_DIR, 'metadata/WGS_vcf_manta_slim.txt')
 
 fn_hmr_summary_expr = make_path(BASE_DIR, 'secondary_data/recurrent_HMRs/summary_expr.txt')
 
-dir_gene_output_mcrpc = make_path(BASE_DIR, 'secondary_data/gene_output/gene_output_mCRPC')
+dir_gene_output_mcrpc = make_path(BASE_DIR, 'secondary_data/gene_output/gene_output')
 dir_gene_output_NT = make_path(BASE_DIR, 'secondary_data/gene_output/gene_output_NT')
 dir_gene_output_upitt = make_path(BASE_DIR, 'secondary_data/gene_output/gene_output_upitt')
 

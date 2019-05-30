@@ -86,8 +86,10 @@ genesfdr = sumexpr[rowsfdr,'name']
 
 numgenes = dim(genes2use)[1]
 
-collvls = paste(tosort[order(tosort$ERG,tosort$ETV1,tosort$ETV4,tosort$ETV5,tosort$CHD1,tosort$SPOP,
-                              tosort$CDK12,tosort$RB1,tosort$PTEN,tosort$MYC),'sample_ids_wgbs'])
+collvls = paste(tosort[order(tosort$ERG,tosort$ETV1,tosort$ETV4,tosort$ETV5,
+                             tosort$CHD1,tosort$SPOP,
+                             tosort$CDK12,tosort$RB1,tosort$PTEN,tosort$MYC),
+                       'sample_ids_wgbs'])
 
 df = data.frame(
     x=sample_ids_wgbs,
@@ -96,16 +98,15 @@ df = data.frame(
     fill=rep(NA,length(sample_ids_wgbs)),
     stringsAsFactors=F)
 rownames(df) = sample_ids_wgbs
-df[intersect(names( metastasis_locations)[metastasis_locations=='Bone'],sample_ids_wgbs),'fill'] = site[1]
-df[intersect(names(metastasis_locations)[metastasis_locations=='Lymph_node'],sample_ids_wgbs),'fill'] = site[2]
-df[intersect(names(metastasis_locations)[metastasis_locations=='Liver'],sample_ids_wgbs),'fill'] = site[3]
-df[intersect(names(metastasis_locations)[metastasis_locations=='Other'],sample_ids_wgbs),'fill'] = site[4]
+df[intersect(names( metastasis_locations )[metastasis_locations=='Bone'],sample_ids_wgbs),'fill'] = site[1]
+df[intersect(names( metastasis_locations )[metastasis_locations=='Lymph_node'],sample_ids_wgbs),'fill'] = site[2]
+df[intersect(names( metastasis_locations )[metastasis_locations=='Liver'],sample_ids_wgbs),'fill'] = site[3]
+df[intersect(names( metastasis_locations )[metastasis_locations=='Other'],sample_ids_wgbs),'fill'] = site[4]
 
 #Loop through genes and set up plotting data frames
 for(i in 1:numgenes) {
     genei = paste(genes2use[i,'gene'])
     print(genei)
-    
     gofi = genes2use[i,'gof']
     all = allele_effect(genei)$alleles
     
@@ -153,7 +154,7 @@ for(i in 1:numgenes) {
     #get recurrent HMRs
     emr_gene = tracks[['HMRseggene']][tracks[['HMRseggene']]$gene==genei]
     emr_gene = emr_gene[countOverlaps(emr_gene,gr)>0 & !is.na(emr_gene$avg_cor)]
-    print(emr_gene)
+    #print(emr_gene)
     if(length(emr_gene)>0) {
         #Get the best eHMR
         #print(emr_gene)
@@ -166,7 +167,7 @@ for(i in 1:numgenes) {
         emr_start = start(emr_best)
         emr_end = end(emr_best)
         methylmean = meanmethyl(ensemblid, dir_gene_output_mcrpc, emr_start,emr_end)[sample_ids_wgbs]
-        methylmean_nt = meanmethyl(ensemblid, dir_gene_output_controls, emr_start,emr_end)
+        methylmean_nt = meanmethyl(ensemblid, filepathctrl, emr_start,emr_end)
         names(methylmean_nt) = gsub('_R1_BISMARK_BT2_PE','',names(methylmean_nt),fixed=T)
         methylmean_nt = methylmean_nt[samples_ctrl]
         
@@ -188,10 +189,10 @@ for(i in 1:numgenes) {
         
         for(cutoff in groups) {
             rowspos = methyldiff>=cutoff
-            rowspos[is.na(rowspos)] = F
+            rowspos[is.na(rowspos)] = FALSE
             df3[rowspos,'fill'] = paste('+',cutoff,'%',sep='')
             rowsneg = methyldiff<=(-cutoff)
-            rowsneg[is.na(rowsneg)] = F
+            rowsneg[is.na(rowsneg)] = FALSE
             df3[rowsneg,'fill'] = paste('-',cutoff,'%',sep='')
         }
     } else {
@@ -257,7 +258,7 @@ for(i in 1:numgenes) {
     }
     df = rbind.data.frame(df,df1,df2,df3)
 }
-df$x = factor(df$x,levels=collvls)
+df$x = factor( df$x, levels=collvls )
 rowsna = is.na(df$fill)
 df = df[!rowsna,]
 
@@ -271,7 +272,7 @@ colpal = c(blues[10],blues[7],blues[5],reds[5],reds[7],reds[10])
 
 xpos = -10
 p = ggplot(df,aes(x,y,width=0.5,height=ht))+geom_tile(aes(fill=fill))+
-    scale_fill_manual(drop=F,name="",
+    scale_fill_manual(drop=FALSE,name="",
                       values=c(
                           'Bone'=wes_palette('Chevalier1')[1], #darkgreen
                           'Lymph_node'=wes_palette('Chevalier1')[2], #gold
