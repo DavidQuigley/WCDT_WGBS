@@ -1,6 +1,302 @@
 #######################################################################################################
 # Function calls
 #######################################################################################################
+##################
+### BEGIN HASH ###
+##################
+
+load.matrix = function( fn ){
+    read.table(file=fn, sep="\t",row.names=1, check.names=F, header=T, na.strings=c('NA', '-99999'), stringsAsFactors=F)
+}
+
+
+get.split.col = function(v, string, col=0, last=F, first=F){
+    if( last & first )
+        stop("Cannot request both last and first column")
+    if( col==0 & !last & !first)
+        stop("Must request either a column by index, first, or last")
+    
+    for(i in 1:length(v)){
+        x = strsplit( v[i], string, fixed=T)[[1]]
+        if(last){
+            v[i] = x[length(x)]
+        }
+        else if(first){
+            v[i] = x[1]
+        }
+        else{
+            v[i] = x[col]
+        }
+    }
+    v
+}
+
+
+
+hsh_new = function(){
+    new.env(hash=TRUE, parent=emptyenv()) 
+}
+
+hsh_in = function(H, key){
+    exists(key, H)
+}
+
+hsh_get = function( H, key, na.if.not.found=F ){
+    if( length(key)==1 ){
+        if( na.if.not.found ){
+            if( exists(key, H) )
+                get(key, H)
+            else
+                NA
+        }
+        else{
+            get(key, H)
+        }
+    }
+    else{
+        results = rep(0, length(key) )
+        if( !na.if.not.found ){
+            for(i in 1:length(key) ){
+                if( exists(key[i], H) ){
+                    results[i] = get(key[i], H )
+                }
+                else{
+                    results[i] = NA
+                }
+            }
+        }
+        else{
+            for(i in 1:length(key) ){
+                results[i] = get(key[i], H )
+            }
+        }
+        results
+    }
+}
+
+hsh_set = function( H, key, value ){
+    assign(key, value, envir=H)
+}
+
+hsh_keys = function( H ){
+    return(sort(ls(H)))
+}
+
+hsh_keys_values = function( H ){
+    keys = ls(H)
+    values = hsh_get(H, keys)
+    data.frame( keys, values, stringsAsFactors=F)
+}
+
+hsh_from_vectors = function( v1, v2=NULL ){
+    # Create a hash from vectors v1, v2 with keys from v1 and values from v2
+    # if v2 is null, set it to 1:length(v1)
+    if( is.null(v2) )
+        v2 = 1:length(v1)
+    if( length(v1) != length(v2) ){
+        stop("Length of v1 != length of v2")
+    }
+    H = hsh_new()
+    for( i in 1:length(v1) ){
+        hsh_set(H, v1[i], v2[i] )
+    }
+    H
+}
+
+
+hsh_unique_values = function( hsh, keys=NULL ){
+    # given hsh where values are vectors, iterate through keys and 
+    # identify the set of unique values
+    all_values = hsh_new()
+    if(is.null(keys)){
+        keys = hsh_keys(hsh)
+    }
+    for(i in 1:length(keys)){
+        if( hsh_in(hsh, keys[i] ) ){
+            values = hsh_get( hsh, keys[i])
+            for( j in 1:length(values)){
+                hsh_set( all_values, values[j], 1)
+            }    
+        }
+    }
+    sort(hsh_keys(all_values))
+}
+
+match.idx = function(A, B, allow.multiple.B=F){
+    # return dataframe of indices into A and B restricted to perfect matches
+    # between A and B, where idx.A[i] == idx.B[i] for each i in matched pairs
+    if( allow.multiple.B ){
+        idx.B = which(B %in% A)
+        idx.A = match(B[idx.B], A)
+    }
+    else{
+        in.both = intersect(A,B)
+        idx.A = match(in.both, A)
+        idx.B = match(in.both, B)
+    }
+    C= data.frame(idx.A, idx.B)
+    if( sum( A[ C$idx.A ] != B[ C$idx.B] )>0 )
+        stop("ERROR! At least one in idx.A not the same as matched item in idx.B")
+    C
+}
+
+allele_effect=function( symbol, do_plot=FALSE, axis_override=NULL, order=NULL ){
+    # missense mutations all come from curated data 
+    # external references:
+    #sample_ids gene_locs 
+    #matrix_SV matrix_tpm matrix_germline matrix_CNA_int_ploidy
+    #curated_fs curated_missense
+    
+    has_somatic_inactivation = rep(FALSE,N_SAMPLES)
+    has_activating_missense = rep(FALSE, length(sample_ids))
+    has_inactivating_missense = rep(FALSE, length(sample_ids))
+    has_activating_sv = rep(FALSE, length(sample_ids))
+    has_inactivating_sv = rep(FALSE, length(sample_ids))
+    has_inactive = matrix_inactive[symbol,] != '.'
+    has_germline = matrix_germline[symbol,] != '.'
+    has_loh = as.character(matrix_CNA[symbol,]) == "LOH"
+    
+    chrom = gene_locs$chrom[ which( rownames(gene_locs)==symbol ) ]
+    
+    # copy number
+    cna = as.numeric( matrix_CNA_int_ploidy[symbol,] )
+    threshold_single =  LOSS_SINGLE_NONSEX   
+    threshold_double =  LOSS_DOUBLE_NONSEX   
+    threshold_amp = GAIN_NONSEX   
+    cn.hi.threshold = GAIN_NONSEX
+    if( chrom=="chrX" | chrom=="chrY" ){
+        threshold_single =  LOSS_SEX
+        threshold_double =  LOSS_SEX   
+        threshold_amp = GAIN_SEX
+        cn.hi.threshold = GAIN_SEX
+    }
+    
+    # expression
+    xp =  as.numeric( matrix_tpm[symbol,] )
+    val_mad_all=mad(xp, na.rm=TRUE)
+    val_median_all = median(xp, na.rm=TRUE)
+    
+    # mutations
+    if( symbol %in% unique(curated_fs$symbol) ){
+        samples_inactive = curated_fs$sample_id[curated_fs$gene==symbol]
+        has_somatic_inactivation[ match.idx( sample_ids, samples_inactive)$idx.A ] = TRUE
+    }
+    
+    if( symbol %in% unique( curated_missense$gene ) ){
+        samples_active = curated_missense$sample_id[curated_missense$gene==symbol & curated_missense$consequence=="activate"] 
+        has_activating_missense[ match.idx( sample_ids, samples_active)$idx.A ] = TRUE
+        samples_inactive = curated_missense$sample_id[curated_missense$gene==symbol & curated_missense$consequence!="activate"] 
+        has_inactivating_missense[ match.idx( sample_ids, samples_inactive)$idx.A ] = TRUE
+        matrix_missense[symbol, !has_activating_missense & !has_inactivating_missense] = '.'
+    }
+    
+    # sv
+    idx = which( curated_sv$threeprime==symbol & curated_sv$consequence=="break" ) 
+    if(length(idx)>0){
+        for(i in 1:length(idx)){
+            sample_id = curated_sv$sample[idx][i]
+            idx_sample_id = which(sample_ids==sample_id)
+            has_inactivating_sv[idx_sample_id] = TRUE
+            matrix_SV[ symbol, idx_sample_id ] = curated_sv$mechanism[idx[i]]
+        }
+    }
+    idx = which( curated_sv$threeprime==symbol & curated_sv$consequence=="activate" ) 
+    if(length(idx)>0){
+        for(i in 1:length(idx)){
+            sample_id = curated_sv$sample[idx][i]
+            idx_sample_id = which(sample_ids==sample_id)
+            has_activating_sv[idx_sample_id] = TRUE
+            matrix_SV[ symbol, idx_sample_id ] = curated_sv$mechanism[idx[i]]
+        }
+    }
+    
+    df = data.frame(
+        activating_missense = has_activating_missense,
+        inactivating_missense = has_inactivating_missense,
+        nonsense = has_inactive,
+        activating_sv = has_activating_sv,
+        inactivating_sv = has_inactivating_sv,
+        inactivating_germline = has_germline,
+        CNA_1 = cna <= threshold_single,
+        CNA_2 = cna <= threshold_double,
+        CNA_amp = cna >= threshold_amp,
+        LOH = has_loh,
+        xp=xp,
+        activating_cna = cna >= cn.hi.threshold & !is.na(xp) & xp >= 100
+    )
+    df$activated = df$activating_missense | df$activating_cna | df$activating_sv
+    
+    alleles_gone = rowSums( df[,c("inactivating_missense", "LOH", "nonsense", 
+                                  "inactivating_sv", "inactivating_germline", 
+                                  "CNA_1")])
+    has_biallelic =    df$CNA_2 | alleles_gone > 1
+    has_monoallelic = !df$CNA_2 & alleles_gone == 1
+    
+    # special case for CDK12 with two somatic mutations
+    if( symbol=="CDK12" ){
+        has_biallelic[ which(sample_ids=="DTB-214-BL")]=TRUE
+        has_monoallelic[ which(sample_ids=="DTB-214-BL")]=FALSE
+    }
+    
+    n_mono = sum( has_monoallelic )
+    n_bi = sum( has_biallelic )
+    n_amp = sum( df$CNA_amp )
+    biallelic_because_sv = has_biallelic & 
+        !df$CNA_2 & df$inactivating_sv  & 
+        rowSums( df[,c("inactivating_missense", "LOH", "nonsense", 
+                       "inactivating_germline", "CNA_1")] ) == 1
+    df$bi = has_biallelic
+    df$mono = has_monoallelic
+    df$bi_from_sv = biallelic_because_sv
+    n_bi_from_sv = sum( biallelic_because_sv )
+    
+    n_alleles = rep(0, N_SAMPLES)
+    n_alleles[has_biallelic] = 2
+    n_alleles[has_monoallelic] = 1
+    logxp = log(xp+1)
+    if(do_plot){
+        if( is.null(axis_override)){
+            boxplot( logxp[n_alleles==2], logxp[n_alleles==1], logxp[n_alleles==0], 
+                     las=1, box.wex=0.25, 
+                     cex.axis=0.75, lwd=0.5,
+                     col=c("darkgrey", "lightgrey", "white"),
+                     names=c("","",""))
+        }else{
+            boxplot( logxp[n_alleles==2], logxp[n_alleles==1], logxp[n_alleles==0], 
+                     las=1, box.wex=0.25, 
+                     cex.axis=0.75, lwd=0.5, axes=FALSE,
+                     col=c("darkgrey", "lightgrey", "white"),
+                     names=c("","",""), ylim=c( min(axis_override), max(axis_override) ))
+            axis( 4, axis_override, las=1, cex.axis=0.75)
+            axis( 1, c(1,2,3), labels = c("","","") )
+            box()
+        }
+    }
+    df$n_alleles_inactivated = n_alleles
+    cor_estimate = NA
+    cor_pval = NA
+    if( sum( !is.na(xp) ) > 50 & ( n_bi > 2 | n_mono > 2) ){
+        cc = cor.test( xp, n_alleles )
+        cor_estimate = cc$estimate
+        cor_pval = cc$p.value
+    }
+    if( !is.null(order)){
+        n_bi = n_bi[order]
+        n_mono = n_mono[order]
+        n_bi_from_sv = n_bi_from_sv[order]
+        n_amp=n_amp[order]
+        cor_estimate = cor_estimate[order]
+        cor_pval = cor_pval[order]
+        df = df[order,]
+    }
+    list( 
+        n_bi = n_bi, n_mono = n_mono, n_bi_from_sv = n_bi_from_sv, n_amp=n_amp,
+        cor_alleles_xp = signif( as.numeric(cor_estimate), 3),
+        pval_alleles_xp = signif( cor_pval, 3 ),
+        alleles = df
+    )
+}
+
 
 plot_gene_methylation_across_samples = function(genename){
     
@@ -379,7 +675,8 @@ heatmap.3 = function(x,
         Colv = FALSE
     else if (Colv == "Rowv" && !isTRUE(Rowv))
         Colv = FALSE
-    if (length(di = dim(x)) != 2 || !is.numeric(x))
+    di = dim(x)
+    if (length(di) != 2 || !is.numeric(x))
         stop("`x' must be a numeric matrix")
     nr = di[1]
     nc = di[2]
