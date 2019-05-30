@@ -126,19 +126,3 @@ ggarrange(plotlist=plist,
           heights=c(3,1,1,1,2) ,
           align="v")
 
-layout(matrix(1:7,7,1))
-par(mar=c(1,5,2,1))
-oo = output
-oo = oo[order(oo$Genebody),]
-names(oo)=c("Sample", "hmr", "Promoter", "Genebody", "TFBS","H3K27ac",
-            "H3K27me3", "onco_pro", "ts_pro", "island","shore","shelf")
-ymax=80000
-barplot( oo$hmr, main="total hmr", xaxs="i", ylim=c(0,ymax)); box()
-ymax=35000
-barplot( oo$island, main="CpG island", xaxs="i", ylim=c(0,ymax)); box()
-barplot( oo$Promoter, main="promoter", xaxs="i", ylim=c(0,ymax)); box()
-barplot( oo$Genebody, main="gene body", xaxs="i", ylim=c(0,ymax)); box()
-ymax=10000
-barplot( oo$TFBS, main="TFBS not promoter", xaxs="i", ylim=c(0,ymax)); box()
-barplot( oo$H3K27ac, main="H3K27ac not promoter", xaxs="i", ylim=c(0,ymax)); box()
-barplot( oo$H3K27me3, main="H3K27me3 not others", xaxs="i", ylim=c(0,ymax)); box()
