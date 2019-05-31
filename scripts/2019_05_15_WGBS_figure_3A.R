@@ -26,7 +26,6 @@ pcaspec$FPPP_p = NULL
 pcaspec$count = 0
 realn = dim(pcaspec)[1]#*33
 
-# TODO: Error in this loop; pcaspec has only 15 columns.
 for(i in 11:42) {
     fdrcol = p.adjust(pcaspec[,i],method='fdr',n=realn)
     pcaspec$count = pcaspec$count+as.numeric(fdrcol<=fdrcut)
@@ -46,8 +45,8 @@ sumexpr$svfdr = p.adjust(sumexpr$svp,method='fdr')
 sumexpr$cnfdr = p.adjust(sumexpr$cnp,method='fdr')
 sumexpr$mutfdr = p.adjust(sumexpr$mutp,method='fdr')
 sumexpr$anovafdr = p.adjust(sumexpr$anovap,method='fdr')
-sumexpr$sd = apply(log2(tpm[rownames(sumexpr),samples_wgbs]+1),1,sd)
-sumexpr$meanexpr = rowMeans(tpm[rownames(sumexpr),samples_wgbs],na.rm=T)
+sumexpr$sd = apply(log2(tpm[rownames(sumexpr),sample_ids_wgbs]+1),1,sd)
+sumexpr$meanexpr = rowMeans(tpm[rownames(sumexpr),sample_ids_wgbs],na.rm=T)
 sumexpr$genewidth = sumexpr$end-sumexpr$start
 
 #write.table(sumexpr,'C:/Users/Admin/Desktop/volcano.tsv',col.names=NA,row.names=T,quote=F,sep='\t')
@@ -70,7 +69,7 @@ names(rowsanovasig) = rownames(sumexpr)
 print(sum(sumexpr$PCa_specific & rowsdnasig))
 print(sum(sumexpr$PCa_specific & rowsmethylsig))
 print(sum(sumexpr$PCa_specific))
-stopifnot(F)
+stopifnot(FALSE)
 
 rowshighlight = rowsanovasig & rowsmethylsig &
     abs(sumexpr$methylcor)>=corcut & sumexpr$sd>=sdcut
@@ -125,21 +124,21 @@ dfplot = data.frame()
 dfplot[1,'percent'] = sum(rowsanovasig,na.rm=T)/totalgenes
 dfplot[1,'group'] = 'Total'
 
-geneshk = rownames(sumexpr)[sumexpr$name %in% housekeeping]
+geneshk = rownames(sumexpr)[sumexpr$name %in% genelist_housekeeping]
 sighk = sum(rowsanovasig[geneshk],na.rm=T)
 dfplot[2,'percent'] = sighk/length(geneshk)
 dfplot[2,'group'] = 'Housekeeping'
 tabhk = c(sighk,length(geneshk)-sighk)
 
-genescosmic = rownames(sumexpr)[sumexpr$name %in% cosmicgenes]
+genescosmic = rownames(sumexpr)[sumexpr$name %in% genelist_cosmic]
 siggosmic = sum(rowsanovasig[genescosmic],na.rm=T)
 dfplot[3,'percent'] = siggosmic/length(genescosmic)
 dfplot[3,'group'] = 'COSMIC'
 tabcosmic = rbind(tabhk,c(siggosmic,length(genescosmic)))
 dfplot[3,'p'] = fisher.test(tabcosmic)$p.value
 
-print(setdiff(pca_cell_genes,sumexpr$name))
-genescell = rownames(sumexpr)[sumexpr$name %in% pca_cell_genes]
+print(setdiff(genelist_pca_cell_genes,sumexpr$name))
+genescell = rownames(sumexpr)[sumexpr$name %in% genelist_pca_cell_genes]
 sigcell = sum(rowsanovasig[genescell],na.rm=T)
 dfplot[4,'percent'] = sigcell / length(genescell)
 dfplot[4,'group'] = 'PCa Genes'
