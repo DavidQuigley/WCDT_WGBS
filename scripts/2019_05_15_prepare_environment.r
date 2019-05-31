@@ -98,6 +98,32 @@ fn_pca_specific = make_path(BASE_DIR, 'metadata/genes/pca_specific.tsv')
 # Hardcoded variables
 #######################################################################################################
 
+# Plot colors
+
+colors_GOF <- c(
+    'purple', #activating_missense
+    'orange', #activating_sv
+    'green') #CNA_amp
+names(colors_GOF) = c(
+    'activating_missense',
+    'activating_sv',
+    'CNA_amp')
+colors_LOF <- c(
+    'purple', #inactivating_missense
+    'purple', #nonsense
+    'purple', #inactivating_germline
+    'orange',#inactivating_sv
+    'cyan4', #CNA_1
+    'cyan4') #CNA_2
+names(colors_LOF) = c(
+    'inactivating_missense',
+    'nonsense',
+    'inactivating_germline',
+    'inactivating_sv',
+    'CNA_1',
+    'CNA_2')
+
+
 # Copy gain/loss hardcoded limits
 #------------------------------------------------------------------------------------------------------
 GAIN_NONSEX = 3
