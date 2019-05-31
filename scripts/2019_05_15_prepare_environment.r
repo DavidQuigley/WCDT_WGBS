@@ -45,7 +45,7 @@ source( make_path(BASE_DIR, 'scripts/2019_05_15_function_calls.R') )
 
 
 dir_copycat = make_path( BASE_DIR, 'secondary_data/copycat' )
-fn_tpm = make_path(BASE_DIR, 'secondary_data/RNAseq/featurecounts_tpm_gene_gencodev28.tsv' )
+fn_tpm_wgbs = make_path(BASE_DIR, 'secondary_data/RNAseq/featurecounts_tpm_gene_gencodev28.tsv' )
 fn_ensembl2sym = make_path(BASE_DIR, 'metadata/genes/ensembl2sym.txt' )
 fn_genelists = make_path(BASE_DIR, 'metadata/genes/COSMIC_6_19_18.tsv' )
 fn_annovar = make_path(BASE_DIR, 'secondary_data/somatic_mutations/annovar.hg38.txt' )
@@ -83,9 +83,11 @@ fn_array_epic = make_path(BASE_DIR, 'secondary_data/illumina_methylation_array_c
 fn_wgs_sample_summary = make_path(BASE_DIR, 'metadata/WGS_sample_summary.txt' )
 fn_tumor_purity = make_path(BASE_DIR, 'metadata/WGS_tumor_purity_AF_012318.csv' )
 fn_manta_slim = make_path(BASE_DIR, 'metadata/WGS_vcf_manta_slim.txt')
+fn_genelist_housekeeping = make_path(BASE_DIR,'metadata/genes/housekeeping_genes.txt')
 
 fn_hmr_summary_expr = make_path(BASE_DIR, 'secondary_data/recurrent_HMRs/summary_expr.txt')
 
+fn_pathways = make_path(BASE_DIR, "metadata/genes/h.all.v6.2.symbols.gmt")
 dir_gene_output_mcrpc = make_path(BASE_DIR, 'secondary_data/gene_output/gene_output')
 dir_gene_output_NT = make_path(BASE_DIR, 'secondary_data/gene_output/gene_output_NT')
 dir_gene_output_upitt = make_path(BASE_DIR, 'secondary_data/gene_output/gene_output_upitt')
@@ -243,6 +245,87 @@ cosmic[cosmic$Gene.Symbol=='ZNF278','Gene.Symbol'] = 'PATZ1'
 genelist_cosmic = cosmic$Gene.Symbol
 genelist_oncogenes = cosmic[grepl('oncogene',cosmic$Role.in.Cancer,fixed=T),'Gene.Symbol']
 genelist_tumor_suppressors = cosmic[grepl('TSG',cosmic$Role.in.Cancer,fixed=T),'Gene.Symbol']
+genelist_housekeeping = read.delim(fn_genelist_housekeeping, sep='\t',
+                                   header=FALSE,stringsAsFactors=FALSE,strip.white=T)[,1]
+
+
+pca_celldf = rbind.data.frame(
+    cbind.data.frame(gene='ERG',gof=TRUE),
+    cbind.data.frame(gene='ETV1',gof=TRUE),
+    cbind.data.frame(gene='ETV4',gof=TRUE),
+    cbind.data.frame(gene='ETV5',gof=TRUE),
+    cbind.data.frame(gene='BRAF',gof=TRUE),
+    cbind.data.frame(gene='HRAS',gof=TRUE),
+    cbind.data.frame(gene='MYC',gof=TRUE),
+    cbind.data.frame(gene='CHD1',gof=FALSE),
+    cbind.data.frame(gene='SPOP',gof=FALSE),
+    cbind.data.frame(gene='IDH1',gof=FALSE),
+    cbind.data.frame(gene='AR',gof=TRUE),
+    cbind.data.frame(gene='FOXA1',gof=TRUE),
+    cbind.data.frame(gene='NCOR1',gof=FALSE),
+    cbind.data.frame(gene='NCOR2',gof=FALSE),
+    cbind.data.frame(gene='ASXL2',gof=FALSE),
+    cbind.data.frame(gene='ZBTB16',gof=FALSE),
+    cbind.data.frame(gene='TP53',gof=FALSE),
+    cbind.data.frame(gene='PTEN',gof=FALSE),
+    cbind.data.frame(gene='AKT1',gof=TRUE),
+    cbind.data.frame(gene='PIK3CA',gof=TRUE),
+    cbind.data.frame(gene='RB1',gof=FALSE),
+    cbind.data.frame(gene='CDKN2A',gof=FALSE),
+    cbind.data.frame(gene='CCND1',gof=TRUE),
+    cbind.data.frame(gene='APC',gof=FALSE),
+    cbind.data.frame(gene='CTNNB1',gof=TRUE),
+    cbind.data.frame(gene='ZNRF3',gof=FALSE),
+    cbind.data.frame(gene='KMT2C',gof=FALSE),
+    cbind.data.frame(gene='KMT2D',gof=FALSE),
+    cbind.data.frame(gene='KDM6A',gof=FALSE),
+    cbind.data.frame(gene='HDAC4',gof=FALSE),
+    cbind.data.frame(gene='NKX3-1',gof=FALSE),
+    cbind.data.frame(gene='AXL',gof=TRUE),
+    cbind.data.frame(gene='MED12',gof=TRUE),
+    cbind.data.frame(gene='ZFHX3',gof=FALSE),
+    cbind.data.frame(gene='GNAS',gof=FALSE),
+    cbind.data.frame(gene='BRCA2',gof=FALSE),
+    cbind.data.frame(gene='BRCA1',gof=FALSE),
+    cbind.data.frame(gene='ATM',gof=FALSE),
+    cbind.data.frame(gene='CDK12',gof=FALSE),
+    cbind.data.frame(gene='ERCC2',gof=FALSE),
+    cbind.data.frame(gene='PRKDC',gof=FALSE),
+    cbind.data.frame(gene='MLH1',gof=FALSE),
+    cbind.data.frame(gene='MSH2',gof=FALSE),
+    cbind.data.frame(gene='MSH6',gof=FALSE),
+    cbind.data.frame(gene='PIK3CA',gof=TRUE),
+    cbind.data.frame(gene='MAP2K4',gof=TRUE),
+    cbind.data.frame(gene='SCHLAP1',gof=TRUE))
+pca_celldf$gene = paste(pca_celldf$gene)
+genelist_pca_cell_genes = pca_celldf$gene
+
+
+
+data.pathways = lapply(scan(fn_pathways, "character", sep = '\n'), function(line){
+    line = strsplit(line, '\t')[[1]]
+    line = line[-2]
+    line = unique(line)
+    return(line)
+})
+for(i in 1:length(data.pathways)) {
+    names(data.pathways)[i] <- data.pathways[[i]][1]
+    data.pathways[[i]] <- data.pathways[[i]][-1]
+}
+names(data.pathways) <- sub("HALLMARK_", "", names(data.pathways))
+data.pathways[['ADIPOGENESIS']] <- NULL
+data.pathways[['MYOGENESIS']] <- NULL
+data.pathways[['PROTEIN_SECRETION']] <- NULL
+data.pathways[['UV_RESPONSE_UP']] <- NULL
+data.pathways[['UV_RESPONSE_DN']] <- NULL
+data.pathways[['HEME_METABOLISM']] <- NULL
+data.pathways[['COAGULATION']] <- NULL
+data.pathways[['BILE_ACID_METABOLISM']] <- NULL
+data.pathways[['PEROXISOME']] <- NULL
+data.pathways[['ALLOGRAFT_REJECTION']] <- NULL
+data.pathways[['SPERMATOGENESIS']] <- NULL
+data.pathways[['PANCREAS_BETA_CELLS']] <- NULL
+
 
 
 #######################################################################################################
@@ -262,7 +345,7 @@ tumorpurity = read.csv(fn_tumor_purity,row.names=2)
 
 # RNAseq data load
 #------------------------------------------------------------------------------------------------------------------
-tpm = read.table(fn_tpm, header=T, row.names=1, stringsAsFactors=F, strip.white=T, check.names=F)
+tpm = read.table(fn_tpm_wgbs, header=T, row.names=1, stringsAsFactors=F, strip.white=T, check.names=F)
 tpm = modify_RNAseq_names(tpm)
 
 
