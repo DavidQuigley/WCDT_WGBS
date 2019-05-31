@@ -299,6 +299,191 @@ allele_effect=function( symbol, do_plot=FALSE, axis_override=NULL, order=NULL ){
 
 
 plot_gene_methylation_across_samples = function(genename){
+    numbest = 1         # # of top eHMRs to plot
+    scalerange = TRUE   # show raw methyl or scale to min/max
+    logexpr = TRUE
+    groupalts = FALSE   # group the DNA altered T/F groups separately
+    use_sc = FALSE      # mark the tSCNC samples? may need for revisions
+    
+    isgof = FALSE
+    hmrsegs = tracks[['HMRseggene']]
+    
+    rowensembl = ensembl2sym$name==genename
+    ensemblid = rownames(ensembl2sym)[rowensembl]
+    stopifnot(sum(rowensembl)==1)
+    chr = ensembl2sym[rowensembl,'chr']
+    gene_start = ensembl2sym[rowensembl,'start']
+    gene_end = ensembl2sym[rowensembl,'end']
+    
+    if(genename=='MYC') {
+        start = gene_start-5000
+        end = gene_end+120000
+    } else if(genename=='AR') {
+        start = gene_start-850000
+        end = gene_end+100000
+    } else if(genename=='ERG') {
+        start = gene_start+3100000
+        end = gene_end+2930000
+        sample_ids_wgbs = rownames(wcdt_genes)[wcdt_genes$TMPRSS2_ERG==3]
+    } else if(ensembl2sym[ensemblid,'strand']=='+') {
+        start = gene_start-1500
+        end = gene_end
+    } else {
+        start = gene_start
+        end = gene_end+1500
+    }
+    gr = GRanges(chr,IRanges(start,end))
+    
+    expr = as.numeric( tpm[ensemblid, match.idx( sample_ids_wgbs, dimnames(tpm)[[2]])$idx.B ] )
+    if(logexpr) {
+        expr = log2(expr+1)
+    }
+    
+    expr = expr / max(expr)
+    covs = data.frame(expr)
+    rownames(covs) = sample_ids_wgbs
+    
+    gof = c(
+        'activating_missense',
+        'activating_sv',
+        'CNA_amp')
+    lof = c(
+        'inactivating_missense',
+        'nonsense',
+        'inactivating_germline',
+        'inactivating_sv',
+        'CNA_1',
+        'CNA_2')
+    grouplvls = c( gof, lof, 'HMR', 'TPM', 'tSCNC')
+    colors = c(colors_GOF, colors_LOF, 'green','darkgray','black')
+    
+    #Set up data frames for the plots
+    df = data.frame()
+    
+    all_eff = allele_effect(genename)$alleles
+    all_eff=all_eff[match.idx( sample_ids_wgbs, dimnames(all_eff)[[1]])$idx.B, ]
+    
+    df_expr = data.frame(
+        x=sample_ids_wgbs,
+        y=2-expr,
+        ht=expr*2,
+        fill=rep('TPM',length(sample_ids_wgbs)),
+        row.names = sample_ids_wgbs)
+    if(use_sc) {
+        df_expr$fill = paste(df_expr$fill)
+        df_expr[sample_ids_wgbs %in% tscnc,'fill'] = 'tSCNC'
+    }
+    
+    
+    df_DNA = data.frame(
+        x=sample_ids_wgbs,
+        y=3,
+        ht=0.95,
+        fill=rep(NA,length(sample_ids_wgbs)),
+        stringsAsFactors=FALSE,
+        row.names = sample_ids_wgbs)
+    
+    df_DNA$fill[ all_eff$activating_missense ] = "activating_missense"
+    df_DNA$fill[ all_eff$activating_sv ] = "activating_sv"
+    df_DNA$fill[ all_eff$inactivating_missense ] = "inactivating_missense"
+    df_DNA$fill[ all_eff$nonsense ] = "nonsense"    
+    df_DNA$fill[ all_eff$inactivating_germline ] = "inactivating_germline"    
+    df_DNA$fill[ all_eff$inactivating_sv ] = "inactivating_sv"    
+    
+    df_CNA = data.frame(
+        x=sample_ids_wgbs,
+        y=4,
+        ht=0.95,
+        fill=rep(NA,length(sample_ids_wgbs)),
+        stringsAsFactors=FALSE)
+    df_CNA$fill[ all_eff$CNA_1 ] = "CNA_1"
+    df_CNA$fill[ all_eff$CNA_2 ] = "CNA_2"
+    df_CNA$fill[ all_eff$CNA_amp ] = "CNA_amp"
+    
+    promotermethyl = hmrsegs[countOverlaps(hmrsegs,gr)>0 & hmrsegs$gene_id==ensemblid]
+    roworder = rev(order(abs(promotermethyl$avg_cor)))
+    emr_best = promotermethyl[roworder]
+    emr_best = emr_best[!is.na(emr_best$avg_cor)]
+    print(range(emr_best$avg_cor))
+    print(emr_best)
+    
+    colramp = colorRampPalette(c('blue','white','red'))(n = 100)
+    grouplvls = c(grouplvls,paste(1:100))
+    colors = c(colors,colramp)
+    names(colors) = grouplvls
+    
+    if(length(emr_best)>=numbest) {
+        #Loop through all recurrent HMRs and add them to model
+        for(i in 1:length(emr_best)) {
+            emr_start = start(emr_best)[i]
+            emr_end = end(emr_best)[i]
+            methylmean = meanmethyl(ensemblid, dir_gene_output_mcrpc, emr_start, emr_end)[sample_ids_wgbs]
+            covs[,i+1] = methylmean
+            #Only plot the best numbest recurrent HMRs
+            if(i <= numbest) {
+                df_hmr = data.frame(
+                    x=sample_ids_wgbs,
+                    y=5,
+                    ht=0.95,
+                    fill=rep(NA,length(sample_ids_wgbs)),
+                    stringsAsFactors=F)
+                rownames(df_hmr) = sample_ids_wgbs
+                if(scalerange) {
+                    meanmethylround = round((methylmean/max(methylmean,na.rm=T))*100)
+                    print(range(methylmean,na.rm=T))
+                } else {
+                    meanmethylround = round(methylmean)
+                }
+                meanmethylround[meanmethylround==0] = 1
+                df_hmr$fill = paste(meanmethylround)
+            }
+        }
+    } else {
+        print('No EMR')
+    }
+    
+    if(groupalts) {
+        collvls = sample_ids_wgbs[order(is.na(df_DNA$fill),expr)]
+    } else {
+        collvls = sample_ids_wgbs[order(expr)]
+    }
+    
+    df = rbind.data.frame(df_DNA, df_CNA, df_hmr, df_expr)
+    df$x = factor(df$x,levels=collvls)
+    df$fill = factor(df$fill,levels=grouplvls)
+    rowsna = is.na(df$fill)
+    df = df[!rowsna,]
+    
+    #Compare linear models
+    rows2keep = rowSums(is.na(covs))==0
+    n_alleles = all_eff$n_alleles_inactivated
+    brks = c(1,3,4,5)
+    rowlabs = c('TPM', 'DNA Alteration', 'CNA', 'Methylation')
+    lm1 = lm(expr~n_alleles,covs[rows2keep,])
+    lm2 = lm(expr~.,covs[rows2keep,])
+    pval = anova(lm1,lm2)[2,'Pr(>F)']
+    #print(summary(lm1)$adj.r.squared)
+    #print(summary(lm2)$adj.r.squared)
+    
+    colors = colors[names(colors) %in% df$fill]
+    
+    if(logexpr) {
+        rowlabs[1] = 'Log2(TPM)+1'
+    }
+    
+    ggplot(df,
+           aes(x=x,y=y,width=0.5,height=ht))+geom_tile(aes(fill=fill))+
+        scale_fill_manual(values=colors,breaks=c(gof,lof))+theme_classic()+
+        theme(axis.text.x=element_blank(),axis.ticks.x=element_blank())+
+        xlab(paste('ANOVA P:',signif(pval,4)))+
+        scale_y_reverse(name=genename,minor_breaks=c(2.05,4.5),breaks=brks,labels=rowlabs)+
+        theme(panel.grid.minor=element_line(colour='black',size=0.5))
+    
+    #covs$n_alleles = factor(covs$n_alleles)
+    #p2 = ggplot(covs,aes(x=n_alleles,y=V2))+geom_boxplot()+theme_classic()
+}
+
+plot_gene_methylation_across_samples_broken = function(genename){
     
     #How many of the top eHMRs do you want to plot? 1 for all figures in paper
     numbest <- 1
@@ -309,7 +494,7 @@ plot_gene_methylation_across_samples = function(genename){
     use_sc = FALSE #mark the tSCNC samples? may need for revisions
     
     isgof = FALSE
-    hmrsegs = TRUEracks[['HMRseggene']]
+    hmrsegs = tracks[['HMRseggene']]
     
     rowensembl <- ensembl2sym$name==genename
     ensemblid <- rownames(ensembl2sym)[rowensembl]
@@ -318,7 +503,7 @@ plot_gene_methylation_across_samples = function(genename){
     gene_start <- ensembl2sym[rowensembl,'start']
     gene_end <- ensembl2sym[rowensembl,'end']
     
-    samples2use <- samples_wgbs
+    samples2use <- sample_ids_wgbs
     if(genename=='MYC') {
         start <- gene_start-5000
         end <- gene_end+120000
@@ -360,7 +545,7 @@ plot_gene_methylation_across_samples = function(genename){
         'CNA_1',
         'CNA_2')
     grouplvls <- c(gof,lof,'HMR','TPM','tSCNC')
-    colors <- c(gofcol,lofcol,
+    colors <- c(colors_GOF,colors_LOF,
                 'green','darkgray','black')
     
     #Set up data frames for the plots
@@ -447,10 +632,8 @@ plot_gene_methylation_across_samples = function(genename){
             for(samplealt in samplesalt) {
                 covs[samplealt,'n_alleles'] <- 3
                 count <- is.na(df1[samplealt,'fill']) + is.na(df2[samplealt,'fill'])
-                if(count==2) {
+                if(count>0) {
                     df1[samplealt,'fill'] <- namegof
-                } else if(count==1) {
-                    df2[samplealt,'fill'] <- namegof
                 }
             }
         }
@@ -465,10 +648,8 @@ plot_gene_methylation_across_samples = function(genename){
                     df2[samplealt,'fill'] <- namelof
                 } else {
                     count <- is.na(df1[samplealt,'fill']) + is.na(df2[samplealt,'fill'])
-                    if(count==2) {
+                    if(count>0) {
                         df1[samplealt,'fill'] <- namelof
-                    } else if(count==1) {
-                        df2[samplealt,'fill'] <- namelof
                     }
                 }
             }
@@ -481,9 +662,9 @@ plot_gene_methylation_across_samples = function(genename){
         collvls <- samples2use[order(expr)]
     }
     
-    df <- rbind.data.frame(df1,df2,df3,dfexpr)
-    df$x = FALSEactor(df$x,levels=collvls)
-    df$fill = FALSEactor(df$fill,levels=grouplvls)
+    df <- rbind.data.frame(df1,df3,dfexpr)
+    df$x = factor(df$x,levels=collvls)
+    df$fill = factor(df$fill,levels=grouplvls)
     rowsna <- is.na(df$fill)
     df <- df[!rowsna,]
     
@@ -491,12 +672,12 @@ plot_gene_methylation_across_samples = function(genename){
     rows2keep <- rowSums(is.na(covs))==0
     
     brks <- c(1,3:(4+numbest))
-    rowlabs <- c('TPM','DNA1','DNA2',paste('Methyl',1:numbest,sep=''))
+    rowlabs <- c('TPM','DNA1',paste('Methyl',1:numbest,sep=''))
     lm1 <- lm(expr~n_alleles,covs[rows2keep,])
     lm2 <- lm(expr~.,covs[rows2keep,])
     pval <- anova(lm1,lm2)[2,'Pr(>F)']
-    print(summary(lm1)$adj.r.squared)
-    print(summary(lm2)$adj.r.squared)
+    #print(summary(lm1)$adj.r.squared)
+    #print(summary(lm2)$adj.r.squared)
     
     colors <- colors[names(colors) %in% df$fill]
     
@@ -504,18 +685,16 @@ plot_gene_methylation_across_samples = function(genename){
         rowlabs[1] <- 'Log2(TPM)+1'
     }
     
-    p <- ggplot(df,aes(x=x,y=y,width=0.5,height=ht))+geom_tile(aes(fill=fill))+
+    ggplot(df,aes(x=x,y=y,width=0.5,height=ht))+geom_tile(aes(fill=fill))+
         scale_fill_manual(values=colors,breaks=c(gof,lof))+theme_classic()+
         #theme(axis.text.x=element_text(angle=90, hjust=1))+
         theme(axis.text.x=element_blank(),axis.ticks.x=element_blank())+
         xlab(paste('ANOVA P:',signif(pval,4)))+
         scale_y_reverse(name=genename,minor_breaks=c(2.05,4.5),breaks=brks,labels=rowlabs)+
         theme(panel.grid.minor=element_line(colour='black',size=0.5))
-    #ggsave(fileout,p,width=10,height=4)
     
-    covs$n_alleles = FALSEactor(covs$n_alleles)
-    p <- ggplot(covs,aes(x=n_alleles,y=V2))+geom_boxplot()+theme_classic()
-    #ggsave(filebox,p)
+    #covs$n_alleles = factor(covs$n_alleles)
+    #p2 <- ggplot(covs,aes(x=n_alleles,y=V2))+geom_boxplot()+theme_classic()
 }
 
 #gets the mean methylation for a region given the path to the gene-level slice files
