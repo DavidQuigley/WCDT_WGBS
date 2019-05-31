@@ -2,6 +2,10 @@
 
 # Plots figure 4B
 # TODO: get this function working after gene summaries are uploaded
-plot_gene_methylation_across_samples("KLK3")
-plot_gene_methylation_across_samples("NKX3-1")
-plot_gene_methylation_across_samples("FOLH1")
+p1=plot_gene_methylation_across_samples("KLK3") + theme(legend.position = "none") 
+p2=plot_gene_methylation_across_samples("NKX3-1") + theme(legend.position = "none") 
+p3=plot_gene_methylation_across_samples("FOLH1") + theme(legend.position = "none") 
+
+ggarrange(plotlist=list( p1, p2, p3 ),
+          ncol = 1, nrow=3)
+
