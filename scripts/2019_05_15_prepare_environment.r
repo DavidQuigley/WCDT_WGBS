@@ -92,6 +92,8 @@ dir_gene_output_mcrpc = make_path(BASE_DIR, 'secondary_data/gene_output/gene_out
 dir_gene_output_NT = make_path(BASE_DIR, 'secondary_data/gene_output/gene_output_NT')
 dir_gene_output_upitt = make_path(BASE_DIR, 'secondary_data/gene_output/gene_output_upitt')
 
+fn_expr_covar_sum = make_path(BASE_DIR, 'secondary_data/recurrent_HMRs/summary_expr.txt')
+
 fn_pca_specific = make_path(BASE_DIR, 'metadata/genes/pca_specific.tsv')
 
 #######################################################################################################
