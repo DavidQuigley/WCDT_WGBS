@@ -471,14 +471,14 @@ plot_gene_methylation_across_samples = function(genename){
         rowlabs[1] = 'Log2(TPM)+1'
     }
     
-    ggplot(df,
+    p=ggplot(df,
            aes(x=x,y=y,width=0.5,height=ht))+geom_tile(aes(fill=fill))+
         scale_fill_manual(values=colors,breaks=c(gof,lof))+theme_classic()+
         theme(axis.text.x=element_blank(),axis.ticks.x=element_blank())+
         xlab(paste('ANOVA P:',signif(pval,4)))+
         scale_y_reverse(name=genename,minor_breaks=c(2.05,4.5),breaks=brks,labels=rowlabs)+
         theme(panel.grid.minor=element_line(colour='black',size=0.5))
-    
+    p
     #covs$n_alleles = factor(covs$n_alleles)
     #p2 = ggplot(covs,aes(x=n_alleles,y=V2))+geom_boxplot()+theme_classic()
 }
