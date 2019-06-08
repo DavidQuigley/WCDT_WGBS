@@ -121,7 +121,7 @@ print(paste('# DNA & Methyl:',sum(rowsmethylsig & rowsdnasig,na.rm=T)))
 print(paste('% Methyl adds to DNA:',sum(rowsanovasig,na.rm=T)/totalgenes))
 
 dfplot = data.frame()
-dfplot[1,'percent'] = sum(rowsanovasig,na.rm=T)/totalgenes
+dfplot[1,'percent'] = sum(rowsanovasig,na.rm=TRUE)/totalgenes
 dfplot[1,'group'] = 'Total'
 
 geneshk = rownames(sumexpr)[sumexpr$name %in% genelist_housekeeping]
@@ -131,7 +131,7 @@ dfplot[2,'group'] = 'Housekeeping'
 tabhk = c(sighk,length(geneshk)-sighk)
 
 genescosmic = rownames(sumexpr)[sumexpr$name %in% genelist_cosmic]
-siggosmic = sum(rowsanovasig[genescosmic],na.rm=T)
+siggosmic = sum(rowsanovasig[genescosmic],na.rm=TRUE)
 dfplot[3,'percent'] = siggosmic/length(genescosmic)
 dfplot[3,'group'] = 'COSMIC'
 tabcosmic = rbind(tabhk,c(siggosmic,length(genescosmic)))
@@ -143,6 +143,7 @@ sigcell = sum(rowsanovasig[genescell],na.rm=T)
 dfplot[4,'percent'] = sigcell / length(genescell)
 dfplot[4,'group'] = 'PCa Genes'
 tabcell = rbind(tabhk,c(sigcell,length(genescell)))
+dfplot[4,'p'] = fisher.test(tabcell)$p.value
 
 print(dfplot)
 
@@ -159,3 +160,7 @@ dfplot$fdr = p.adjust(dfplot$p,method='fdr')
 dfplot = dfplot[rev(order(dfplot$percent)),]
 #write.table(dfplot,'C:/Users/Admin/Desktop/add2dna.tsv',col.names=T,row.names=F,quote=F,sep='\t')
 
+layout(matrix(1,1,1))
+dfplot = dfplot[order(dfplot$percent),]
+dfplot$percent=round(dfplot$percent*100)
+barplot( dfplot$percent, xaxs="i", ylab="% of genes in pathway", las=1, ylim=c(0,80) )
