@@ -24,9 +24,12 @@ library(plyr)
 library(matrixStats)
 library(reshape2)
 library(RColorBrewer)
+library(rtracklayer)
 library(scales)
 library(stringr)
+library(Sushi)
 library(wesanderson)
+
 
 BASE_DIR = '/notebook/human_sequence_prostate_WGBS/reproduce/WCDT_WGBS'
 make_path = function(BASE_DIR, s){
@@ -67,6 +70,7 @@ fns_chipseq = c(
 fn_cpg = make_path(BASE_DIR, 'metadata/ucsc_cpg_island.txt' )
 fn_DSSS_tscnc_adeno = make_path(BASE_DIR, 'secondary_data/DSS/DSS_tscnc_adeno.tsv' )
 fn_DSS_localized_benign = make_path(BASE_DIR, 'secondary_data/DSS/DSS_localized_benign.tsv' )
+fn_DSS_adeno_localized = make_path(BASE_DIR, 'secondary_data/DSS/DSS_metastatic_localized_SRA.tsv')
 
 fn_hmrseg_gene = make_path(BASE_DIR, 'secondary_data/recurrent_HMRs/hmrseg_gene.txt' )
 fn_hmrseg = make_path(BASE_DIR, 'secondary_data/recurrent_HMRs/hmrseg.txt' )
@@ -95,6 +99,31 @@ dir_gene_output_upitt = make_path(BASE_DIR, 'secondary_data/gene_output/gene_out
 fn_expr_covar_sum = make_path(BASE_DIR, 'secondary_data/recurrent_HMRs/summary_expr.txt')
 
 fn_pca_specific = make_path(BASE_DIR, 'metadata/genes/pca_specific.tsv')
+
+fn_lift_38_to_19 = make_path(BASE_DIR, 'metadata/genome_builds/hg38ToHg19.over.chain')
+fn_lift_19_to_38 = make_path(BASE_DIR, 'metadata/genome_builds/hg19ToHg38.over.chain')
+
+fn_gencode_exons = make_path(BASE_DIR, 'metadata/genome_builds/gencode28_exons.txt')
+dir_ar_enhancer_bw = make_path( BASE_DIR, 'secondary_data/chipseq/H3K27ac_chrX' )
+fn_h3k27ac_avg = make_path(BASE_DIR, "secondary_data/chipseq/H3K27ac_cellline/h3k27ac_avg.bw" )
+fn_chipseq_hoxb13 = make_path(BASE_DIR, "secondary_data/chipseq/HOXB13_hg38.bed")
+fn_chipseq_foxa1 = make_path(BASE_DIR, "secondary_data/chipseq/FOXA1_hg38.bed")
+fn_chipseq_erg_hg38 = make_path(BASE_DIR, "secondary_data/chipseq/erg_hg38.bed")
+fn_chipseq_erg_vcap = make_path(BASE_DIR, "secondary_data/chipseq/erg_vcap_hg38.bed")
+fn_crpc_are = make_path(BASE_DIR, 'secondary_data/chipseq/crpc_are_sum_hg38.bed')
+fn_loc_are = make_path(BASE_DIR, 'secondary_data/chipseq/localized_are_sum_hg38.bed')
+fn_pc100_are = make_path(BASE_DIR, 'secondary_data/chipseq/pca100/AR_sum_hg38.bed')
+fn_pc100_h3k4me3 = make_path(BASE_DIR, 'secondary_data/chipseq/pca100/H3K4me3_sum_hg38.bed')
+fn_pc100_h3k27ac = make_path(BASE_DIR, 'secondary_data/chipseq/pca100/H3K27ac_sum_hg38.bed')
+
+fn_chia_ar_bind = make_path(BASE_DIR, 'secondary_data/chiapet/AR_merged_hg38.bed' )
+fn_chiapet_ar = make_path( BASE_DIR, "secondary_data/chiapet/ar_chiapet_hg38.txt")
+fn_chiapet_erg = make_path(BASE_DIR, 'secondary_data/chiapet/erg_chiapet_hg38.txt')
+fn_chiapet_erg_bind = make_path(BASE_DIR, 'secondary_data/chiapet/ERG_merged_hg38.bed')
+
+fn_hic_lncap = make_path(BASE_DIR, 'secondary_data/HiC/hic_lncap_hg38.txt' )
+fn_hic_pc3 = make_path(BASE_DIR, 'secondary_data/HiC/hic_pc3_hg38.txt' )
+fn_hic_prec = make_path(BASE_DIR, 'secondary_data/HiC/hic_prec_hg38.txt' )
 
 #######################################################################################################
 # Hardcoded variables
@@ -509,17 +538,23 @@ tracks[['cpg_shelf']] = makeGRangesFromDataFrame(cpg)
 
 ### DSS
 #DSS tSCNC
-tscncdf = read.delim(file=fn_DSSS_tscnc_adeno,sep='\t',header=T,stringsAsFactors=F)
+tscncdf = read.delim(file=fn_DSSS_tscnc_adeno,sep='\t',header=TRUE,stringsAsFactors=FALSE)
 tscncdf$chr = chromosomes[tscncdf$chr]
-dss_tscnc = makeGRangesFromDataFrame(tscncdf,keep.extra.columns=T)
+dss_tscnc = makeGRangesFromDataFrame(tscncdf,keep.extra.columns=TRUE)
 
 #DSS localized vs benign
-locdf = read.delim(file=fn_DSS_localized_benign,sep='\t',header=T,stringsAsFactors=F)
+locdf = read.delim(file=fn_DSS_localized_benign,sep='\t',header=TRUE,stringsAsFactors=FALSE)
 locdf$chr = chromosomes[locdf$chr]
-dss_loc = makeGRangesFromDataFrame(locdf,keep.extra.columns=T)
+dss_loc = makeGRangesFromDataFrame(locdf,keep.extra.columns=TRUE)
+
+#DSS adeno vs localized
+
+metdf = read.delim(file=fn_DSS_adeno_localized, sep='\t',header=TRUE,stringsAsFactors=FALSE)
+metdf$chr = chromosomes[metdf$chr]
+dss_met = makeGRangesFromDataFrame(metdf,keep.extra.columns=TRUE)
 
 ### HMR
-hmrseggene = read.delim(fn_hmrseg_gene,header=T,stringsAsFactors=F,sep='\t',strip.white=T)
+hmrseggene = read.delim(fn_hmrseg_gene,header=TRUE,stringsAsFactors=FALSE,sep='\t',strip.white=T)
 tracks[['HMRseggene']] = makeGRangesFromDataFrame(hmrseggene,keep.extra.columns=T)
 
 hmrseg = read.delim(fn_hmrseg,header=T,stringsAsFactors=F,sep='\t',strip.white=T)
