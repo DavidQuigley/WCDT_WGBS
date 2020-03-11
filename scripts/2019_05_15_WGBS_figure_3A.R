@@ -37,8 +37,8 @@ print(sum(rowsspec))
 siggenes = pcaspec[rowsspec,'gene']
 print(length(siggenes))
 commongenes = intersect(rownames(pcaspec)[rowsspec],rownames(sumexpr))
-sumexpr$PCa_specific = F
-sumexpr[commongenes,'PCa_specific'] = T
+sumexpr$PCa_specific = FALSE
+sumexpr[commongenes,'PCa_specific'] = TRUE
 
 #Calculate FDRs for DNA alterations, mutations
 sumexpr$svfdr = p.adjust(sumexpr$svp,method='fdr')
@@ -111,56 +111,4 @@ plist[[4]] = ggplot(sumexpr,aes(x=PCa_specific,y=methylcor))+
     geom_boxplot()+theme_classic()+coord_flip()
 
 ggarrange(plotlist=plist,widths=c(1,4),heights=c(4,1))
-#ggsave('C:/Users/Admin/Desktop/volcano.pdf',width=13,height=10,useDingbats=F)
-#dev.off()
-
-#Print out a table with the pathway enrichment of eHMRs
-print(paste('# Methyl:',sum(rowsmethylsig,na.rm=T)))
-print(paste('# DNA:',sum(rowsdnasig,na.rm=T)))
-print(paste('# DNA & Methyl:',sum(rowsmethylsig & rowsdnasig,na.rm=T)))
-print(paste('% Methyl adds to DNA:',sum(rowsanovasig,na.rm=T)/totalgenes))
-
-dfplot = data.frame()
-dfplot[1,'percent'] = sum(rowsanovasig,na.rm=TRUE)/totalgenes
-dfplot[1,'group'] = 'Total'
-
-geneshk = rownames(sumexpr)[sumexpr$name %in% genelist_housekeeping]
-sighk = sum(rowsanovasig[geneshk],na.rm=T)
-dfplot[2,'percent'] = sighk/length(geneshk)
-dfplot[2,'group'] = 'Housekeeping'
-tabhk = c(sighk,length(geneshk)-sighk)
-
-genescosmic = rownames(sumexpr)[sumexpr$name %in% genelist_cosmic]
-siggosmic = sum(rowsanovasig[genescosmic],na.rm=TRUE)
-dfplot[3,'percent'] = siggosmic/length(genescosmic)
-dfplot[3,'group'] = 'COSMIC'
-tabcosmic = rbind(tabhk,c(siggosmic,length(genescosmic)))
-dfplot[3,'p'] = fisher.test(tabcosmic)$p.value
-
-print(setdiff(genelist_pca_cell_genes,sumexpr$name))
-genescell = rownames(sumexpr)[sumexpr$name %in% genelist_pca_cell_genes]
-sigcell = sum(rowsanovasig[genescell],na.rm=T)
-dfplot[4,'percent'] = sigcell / length(genescell)
-dfplot[4,'group'] = 'PCa Genes'
-tabcell = rbind(tabhk,c(sigcell,length(genescell)))
-dfplot[4,'p'] = fisher.test(tabcell)$p.value
-
-print(dfplot)
-
-for(i in 1:length(data.pathways)) {
-    if(i%%100==0) print(i)
-    genesi = rownames(sumexpr)[sumexpr$name %in% data.pathways[[i]]]
-    sigi = sum(rowsanovasig[genesi],na.rm=T)
-    dfplot[i+4,'percent'] = sigi/length(genesi)
-    dfplot[i+4,'group'] = names(data.pathways)[i]
-    tabi = rbind(tabhk,c(sigi,length(genesi)))
-    dfplot[i+4,'p'] = fisher.test(tabi)$p.value
-}
-dfplot$fdr = p.adjust(dfplot$p,method='fdr')
-dfplot = dfplot[rev(order(dfplot$percent)),]
-#write.table(dfplot,'C:/Users/Admin/Desktop/add2dna.tsv',col.names=T,row.names=F,quote=F,sep='\t')
-
-layout(matrix(1,1,1))
-dfplot = dfplot[order(dfplot$percent),]
-dfplot$percent=round(dfplot$percent*100)
-barplot( dfplot$percent, xaxs="i", ylab="% of genes in pathway", las=1, ylim=c(0,80) )
+ggsave(fn_figure3a,width=13,height=10,useDingbats=F)

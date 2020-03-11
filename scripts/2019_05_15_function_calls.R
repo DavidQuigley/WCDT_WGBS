@@ -1,6 +1,129 @@
 #######################################################################################################
 # Function calls
 #######################################################################################################
+
+# Chiapet
+# ------------------------------------------------------------------------------------------
+
+readchiapet <- function(filenamein) {
+    chiapet <- read.delim(filenamein, header=T, sep='\t', stringsAsFactors=F, strip.white=T)
+    chiapet$strand1 <- '.'
+    chiapet$strand2 <- '.'
+    chiapet$name <- 'chiapet'
+    chiapet_rows <- chiapet$score>=minscore &
+        ((chiapet$chrom1==chr & overlap(chiapet$start1,chiapet$end1,start,end)) |
+             (chiapet$chrom2==chr & overlap(chiapet$start2,chiapet$end2,start,end)))
+    print(sum(chiapet_rows))
+    if(sum(chiapet_rows)>0) {
+        chiapet <- chiapet[chiapet_rows,]	
+        rowsinternal <- 
+            ((chiapet$chrom1==chr & overlap(chiapet$start1,chiapet$end1,start,end)) &
+                 (chiapet$chrom2==chr & overlap(chiapet$start2,chiapet$end2,start,end)))
+        rowssamechr <- chiapet$chrom1==chr & chiapet$chrom2==chr
+        chiapet$where <- 3
+        plotoff=TRUE
+        if(plotoff) {
+            chiapet[rowssamechr,'where'] <- 2
+            chiapet[rowsinternal,'where'] <- 1
+            
+            for(i in 1:dim(chiapet)[1]) {
+                if(i %% 100==0) print(i)
+                chiapet[i,'chr1real'] <- chiapet[i,'chrom1']
+                chiapet[i,'start1real'] <- chiapet[i,'start1']
+                chiapet[i,'end1real'] <- chiapet[i,'end1']
+                chiapet[i,'chr2real'] <- chiapet[i,'chrom2']
+                chiapet[i,'start2real'] <- chiapet[i,'start2']
+                chiapet[i,'end2real'] <- chiapet[i,'end2']
+                
+                if(chiapet[i,'chrom1'] != chr) {
+                    chiapet[i,'start1'] <- chiapet[i,'start2']+1
+                    chiapet[i,'end1'] <- chiapet[i,'end2']+1
+                    chiapet[i,'chrom1'] <- chr
+                } else if(chiapet[i,'start1'] < start) {
+                    chiapet[i,'start1'] <- start
+                    chiapet[i,'end1'] <- start+1
+                } else if(chiapet[i,'end1'] > end) {
+                    chiapet[i,'start1'] <- end-1
+                    chiapet[i,'end1'] <- end
+                }
+                if(chiapet[i,'chrom2'] != chr) {
+                    chiapet[i,'start2'] <- chiapet[i,'start1']+1
+                    chiapet[i,'end2'] <- chiapet[i,'end1']+1
+                    chiapet[i,'chrom2'] <- chr
+                } else if(chiapet[i,'start2'] < start) {
+                    chiapet[i,'start2'] <- start
+                    chiapet[i,'end2'] <- start+1
+                } else if(chiapet[i,'end2'] > end) {
+                    chiapet[i,'start2'] <- end-1
+                    chiapet[i,'end2'] <- end
+                }
+            }
+        }
+        return(chiapet)
+    } else {
+        return(NULL)
+    }	
+}
+
+readhic <- function(filenamehic) {
+    hic <- read.delim(filenamehic, header=T, sep='\t', stringsAsFactors=F, strip.white=T)[,1:7]
+    hic$strand1 <- '.'
+    hic$strand2 <- '.'
+    hic$name <- 'HiC'
+    hic_rows <- 
+        ((hic$chrom1==chr & overlap(hic$start1,hic$end1,start,end)) |
+             (hic$chrom2==chr & overlap(hic$start2,hic$end2,start,end)))
+    plotoff=TRUE
+    if(sum(hic_rows)>0) {
+        hic <- hic[hic_rows,]
+        rowsinternal <- 
+            ((hic$chrom1==chr & overlap(hic$start1,hic$end1,start,end)) &
+                 (hic$chrom2==chr & overlap(hic$start2,hic$end2,start,end)))
+        rowssamechr <- hic$chrom1==chr & hic$chrom2==chr
+        hic$where <- 3
+        
+        if(plotoff) {
+            hic[rowssamechr,'where'] <- 2
+            hic[rowsinternal,'where'] <- 1
+            
+            for(i in 1:dim(hic)[1]) {
+                if(i %% 100==0) print(i)
+                hic[i,'chr1real'] <- hic[i,'chrom1']
+                hic[i,'pos1real'] <- hic[i,'start1']
+                hic[i,'chr2real'] <- hic[i,'chrom2']
+                hic[i,'pos2real'] <- hic[i,'start2']
+                
+                if(hic[i,'chrom1'] != chr) {
+                    hic[i,'start1'] <- hic[i,'start2']+1
+                    hic[i,'end1'] <- hic[i,'end2']+1
+                    hic[i,'chrom1'] <- chr
+                } else if(hic[i,'start1'] < start) {
+                    hic[i,'start1'] <- start
+                    hic[i,'end1'] <- start+1
+                } else if(hic[i,'end1'] > end) {
+                    hic[i,'start1'] <- end-1
+                    hic[i,'end1'] <- end
+                }
+                if(hic[i,'chrom2'] != chr) {
+                    hic[i,'start2'] <- hic[i,'start1']+1
+                    hic[i,'end2'] <- hic[i,'end1']+1
+                    hic[i,'chrom2'] <- chr
+                } else if(hic[i,'start2'] < start) {
+                    hic[i,'start2'] <- start
+                    hic[i,'end2'] <- start+1
+                } else if(hic[i,'end2'] > end) {
+                    hic[i,'start2'] <- end-1
+                    hic[i,'end2'] <- end
+                }
+            }
+        }
+        return(hic)
+    } else {
+        return(NULL)
+    }	
+}
+
+# ------------------------------------------------------------------------------------------
 ##################
 ### BEGIN HASH ###
 ##################
@@ -139,6 +262,185 @@ match.idx = function(A, B, allow.multiple.B=F){
         stop("ERROR! At least one in idx.A not the same as matched item in idx.B")
     C
 }
+
+# gene track functions
+# ------------------------------------------------------------------------
+
+# data assumes chr1, pos1, chr2, pos2, svtype, sample_id
+svwindow <- function(data, chr, start, end, window=windowsize, extra=peakflank, endsonly=T) {
+    stopifnot((end-start)%%window==0)
+    stopifnot(sum(is.na(data$chr1))==0)
+    stopifnot(sum(colnames(data)!=c('chr1','pos1','chr2','pos2','svtype','sample_id'))==0)
+    steps <- (end-start)/window
+    output <- data.frame()
+    for(i in 1:steps) {
+        if(i %% 500 == 0) {
+            print(paste(i, '/', steps))
+        }
+        left <- start+((i-1)*window)
+        right <- left+window-1
+        output[i,'chrom'] <- chr
+        output[i,'start'] <- left
+        output[i,'end'] <- right
+        onechr <- is.na(data$chr2) | is.na(data$pos2)
+        samechr <- data$chr1==data$chr2 & !onechr
+        diffchr <- data$chr1!=data$chr2 & !onechr
+        if(endsonly) {
+            diffchr <- diffchr | samechr
+            samechr <- rep(F,length(samechr))
+        }
+        left <- left-extra
+        right <- right+extra
+        rowsone <- onechr & inrange(data$pos1,left,right) & data$chr1==chr
+        rowssame <- samechr & overlap(data$pos1,data$pos2,left,right) & data$chr1==chr
+        rowsdiff <- diffchr &
+            ((inrange(data$pos1,left,right) & data$chr1==chr) |
+                 (inrange(data$pos2,left,right) & data$chr2==chr))
+        
+        datarows <- rowsone | rowssame | rowsdiff
+        stopifnot(sum(is.na(datarows))==0)
+        output[i,'value'] <- length(unique(data[datarows,'sample_id']))
+    }
+    return(output)
+}
+
+
+# data assumes chrom, start, end, sample_id
+slidingwindow <- function(data, chr, start, end, bysample=T, window=windowsize, extra=peakflank) {
+    stopifnot((end-start)%%window==0)
+    if(bysample) {
+        stopifnot(sum(colnames(data)!=c('chrom','start','end','sample_id'))==0)
+    } else {
+        stopifnot(sum(colnames(data)!=c('chrom','start','end','value'))==0)
+    }
+    
+    steps <- (end-start)/window
+    output <- data.frame()
+    for(i in 1:steps) {
+        if(i %% 500 == 0) {
+            print(paste(i, '/', steps))
+        }
+        left <- start+((i-1)*window)
+        right <- left+window-1
+        output[i,'chrom'] <- chr
+        output[i,'start'] <- left
+        output[i,'end'] <- right
+        
+        left <- left-extra
+        right <- right+extra
+        stopifnot((right-left+1) == (window+extra+extra))
+        rows <- overlap(data$start,data$end,left,right) & data$chrom==chr
+        stopifnot(sum(is.na(rows))==0)
+        if(sum(rows)>0) {
+            dataslice <- data[rows,]
+            if(bysample) {
+                output[i,'value'] <- length(unique(dataslice$sample_id))
+            } else {
+                #dataslice$start <- pmax(dataslice$start,start)
+                #dataslice$end <- pmin(dataslice$start,end)
+                #meansize <- mean(dataslice$end-dataslice$start+1)
+                #dataslice$weight <- (dataslice$end-dataslice$start+1)/meansize
+                #output[i,'value'] <- sum(dataslice$value*dataslice$weight,na.rm=T)
+                output[i,'value'] <- sum(dataslice$value,na.rm=T)
+            }
+        } else {
+            output[i,'value'] <- 0
+        }
+    }
+    return(output)
+}
+
+findpeaks <- function(sw_bed, threshold, minwidth=10000, within=10000, minsize=3) {
+    stopifnot(sum(colnames(sw_bed)!=c('chrom','start','end','value'))==0)
+    results <- data.frame()
+    inpeak <- F
+    currentpeak <- 0
+    
+    if(max(sw_bed$value)<threshold) {
+        return(NULL)
+    }
+    
+    for(i in 1:dim(sw_bed)[1]) {
+        stopifnot(!is.na(currentpeak))
+        val <- sw_bed[i,'value']
+        stopifnot(!is.na(val))
+        if(val>=threshold) {
+            if(!inpeak) { #new peak?
+                inpeak <- T
+                newpeakstart <- sw_bed[i,'start']
+                if(currentpeak==0) { #first peak
+                    currentpeak <- currentpeak+1
+                    results[currentpeak,'start'] <- newpeakstart
+                    results[currentpeak,'max'] <- val
+                } else if(newpeakstart-results[currentpeak,'end']>within) { #new peak!
+                    currentpeak <- currentpeak+1
+                    results[currentpeak,'start'] <- newpeakstart
+                    results[currentpeak,'max'] <- val
+                } else {
+                    #keep current peak, and continue
+                    results[currentpeak,'end'] <- NA
+                }
+            } else { 
+                #continue peak
+                results[currentpeak,'max'] <- max(results[currentpeak,'max'],val)
+            }
+            if(i==dim(sw_bed)[1]) { #stop if last one
+                results[currentpeak,'end'] <- sw_bed[i,'end']
+                inpeak <- F
+            }
+        } else {
+            if(inpeak) { #done with peak
+                results[currentpeak,'end'] <- sw_bed[i-1,'end']
+                inpeak <- F
+            } else {
+                #do nothing and keep going
+            }
+        }
+        #print(results)
+    }
+    stopifnot(sum(is.na(results$start))==0)
+    stopifnot(sum(is.na(results$end))==0)
+    stopifnot(sum(is.na(results$max))==0)
+    results$width <- results$end-results$start
+    results <- results[results$width>=minwidth & results$max>=minsize,]
+    return(results)
+}
+
+
+mergebed <- function(input) {
+    stopifnot(sum(colnames(input)!=c('chrom','start','end','value'))==0)
+    input_sorted <- input[order(input$chr, input$start),]
+    
+    curr_chr <- ''
+    curr_end <- -1
+    curr_value <- -1
+    for(i in 1:dim(input_sorted)[1]) {
+        chri <- input_sorted[i,'chrom']
+        starti <- input_sorted[i,'start']
+        endi <- input_sorted[i,'end']
+        valuei <- input_sorted[i,'value']
+        
+        if(curr_chr == chri) { #same chromosome
+            if(starti <= curr_end) {
+                print(paste('OVERLAP:',chri,curr_end,starti))
+                if(curr_value > valuei) { #keep old, adjust new
+                    input_sorted[i,'start'] <- curr_end+1
+                } else { #keep new, adjust old
+                    input_sorted[i-1,'end'] <- starti-1
+                }
+            }
+        } else {#nothing to do if new chromosome, other than reset
+            curr_chr <- chri
+        }
+        curr_end <- endi
+        curr_value <- valuei
+    }
+    return(input_sorted)
+}
+
+
+# WGS functions
+# ------------------------------------------------------------------------
 
 allele_effect=function( symbol, do_plot=FALSE, axis_override=NULL, order=NULL ){
     # missense mutations all come from curated data 
@@ -297,6 +599,30 @@ allele_effect=function( symbol, do_plot=FALSE, axis_override=NULL, order=NULL ){
     )
 }
 
+assess_tandem_dup = function( chrom, locus, list_sv, chrom_lengths, samples_ids ){
+    # return vector of which samples have a TD intersecting a given locus
+    has_TD_locus = rep(FALSE, N_SAMPLES)
+    for(i in 1:N_SAMPLES){
+        sample_id = sample_ids[i]
+        n_bins=ceiling( chrom_lengths$V2[ which(rownames(chrom_lengths)==chrom) ] /10000 )
+        local_counts_td = rep(0,n_bins)
+        sv = list_sv[list_sv$chrom_start==chrom & 
+                         list_sv$sample_id==sample_id & 
+                         list_sv$svtype=="TANDEM",]
+        if( dim(sv)[1] ){
+            for(j in 1:dim(sv)[1]){
+                x1 = round( sv$pos_start[j] / 10000, 0 )
+                x2 = round( sv$pos_end[j] / 10000, 0 )
+                local_counts_td[x1:x2] = local_counts_td[x1:x2] + 1
+            }
+        }
+        has_TD_locus[i]=local_counts_td[locus]>=1 
+    }
+    has_TD_locus
+}
+
+
+
 
 plot_gene_methylation_across_samples = function(genename){
     numbest = 1         # # of top eHMRs to plot
@@ -417,7 +743,7 @@ plot_gene_methylation_across_samples = function(genename){
         for(i in 1:length(emr_best)) {
             emr_start = start(emr_best)[i]
             emr_end = end(emr_best)[i]
-            methylmean = meanmethyl(ensemblid, dir_gene_output_mcrpc, emr_start, emr_end)[sample_ids_wgbs]
+            methylmean = meanmethyl(ensemblid, dir_gene_output_mcrpc_narrow, emr_start, emr_end)[sample_ids_wgbs]
             covs[,i+1] = methylmean
             #Only plot the best numbest recurrent HMRs
             if(i <= numbest) {
@@ -483,219 +809,6 @@ plot_gene_methylation_across_samples = function(genename){
     #p2 = ggplot(covs,aes(x=n_alleles,y=V2))+geom_boxplot()+theme_classic()
 }
 
-plot_gene_methylation_across_samples_broken = function(genename){
-    
-    #How many of the top eHMRs do you want to plot? 1 for all figures in paper
-    numbest <- 1
-    
-    scalerange = TRUE #show raw methyl or scale to min/max
-    logexpr = TRUE
-    groupalts = FALSE #group the DNA altered T/F groups separately
-    use_sc = FALSE #mark the tSCNC samples? may need for revisions
-    
-    isgof = FALSE
-    hmrsegs = tracks[['HMRseggene']]
-    
-    rowensembl <- ensembl2sym$name==genename
-    ensemblid <- rownames(ensembl2sym)[rowensembl]
-    stopifnot(sum(rowensembl)==1)
-    chr <- ensembl2sym[rowensembl,'chr']
-    gene_start <- ensembl2sym[rowensembl,'start']
-    gene_end <- ensembl2sym[rowensembl,'end']
-    
-    samples2use <- sample_ids_wgbs
-    if(genename=='MYC') {
-        start <- gene_start-5000
-        end <- gene_end+120000
-    } else if(genename=='AR') {
-        start <- gene_start-850000
-        end <- gene_end+100000
-    } else if(genename=='ERG') {
-        start <- gene_start+3100000
-        end <- gene_end+2930000
-        samples2use <- rownames(wcdt_genes)[wcdt_genes$TMPRSS2_ERG==3]
-        #promoter/genebody eHMRs
-    } else if(ensembl2sym[ensemblid,'strand']=='+') {
-        start <- gene_start-1500
-        end <- gene_end
-    } else {
-        start <- gene_start
-        end <- gene_end+1500
-    }
-    gr <- GRanges(chr,IRanges(start,end))
-    
-    expr <- as.numeric(tpm[ensemblid,samples2use])
-    if(logexpr) {
-        expr <- log2(expr+1)
-    }
-    
-    expr <- expr / max(expr)
-    covs <- data.frame(expr)
-    rownames(covs) <- samples2use
-    
-    gof <- c(
-        'activating_missense',
-        'activating_sv',
-        'CNA_amp')
-    lof <- c(
-        'inactivating_missense',
-        'nonsense',
-        'inactivating_germline',
-        'inactivating_sv',
-        'CNA_1',
-        'CNA_2')
-    grouplvls <- c(gof,lof,'HMR','TPM','tSCNC')
-    colors <- c(colors_GOF,colors_LOF,
-                'green','darkgray','black')
-    
-    #Set up data frames for the plots
-    df <- data.frame()
-    
-    all <- allele_effect(genename)$alleles
-    
-    df1 <- data.frame(
-        x=samples2use,
-        y=3,
-        ht=0.95,
-        fill=rep(NA,length(samples2use)),
-        stringsAsFactors=F)
-    df2 <- data.frame(
-        x=samples2use,
-        y=4,
-        ht=0.95,
-        fill=rep(NA,length(samples2use)),
-        stringsAsFactors=F)
-    df3 <- data.frame()
-    dfexpr <- data.frame(
-        x=samples2use,
-        y=2-expr,
-        ht=expr*2,
-        fill=rep('TPM',length(samples2use)))
-    if(use_sc) {
-        dfexpr$fill <- paste(dfexpr$fill)
-        dfexpr[samples2use %in% tscnc,'fill'] <- 'tSCNC'
-    }
-    
-    rownames(df1) <- samples2use
-    rownames(df2) <- samples2use
-    rownames(dfexpr) <- samples2use
-    
-    promotermethyl <- hmrsegs[countOverlaps(hmrsegs,gr)>0 & hmrsegs$gene_id==ensemblid]
-    roworder <- rev(order(abs(promotermethyl$avg_cor)))
-    emr_best <- promotermethyl[roworder]
-    emr_best <- emr_best[!is.na(emr_best$avg_cor)]
-    print(range(emr_best$avg_cor))
-    print(emr_best)
-    
-    colramp <- colorRampPalette(c('blue','white','red'))(n = 100)
-    grouplvls <- c(grouplvls,paste(1:100))
-    colors <- c(colors,colramp)
-    names(colors) <- grouplvls
-    
-    if(length(emr_best)>=numbest) {
-        #Loop through all recurrent HMRs and add them to model
-        for(i in 1:length(emr_best)) {
-            emr_start <- start(emr_best)[i]
-            emr_end <- end(emr_best)[i]
-            methylmean <- meanmethyl(ensemblid, dir_gene_output_mcrpc, emr_start, emr_end)[samples2use]
-            covs[,i+1] <- methylmean
-            #Only plot the best numbest recurrent HMRs
-            if(i <= numbest) {
-                df3i <- data.frame(
-                    x=samples2use,
-                    y=i+4,
-                    ht=0.95,
-                    fill=rep(NA,length(samples2use)),
-                    stringsAsFactors=F)
-                rownames(df3i) <- samples2use
-                if(scalerange) {
-                    meanmethylround <- round((methylmean/max(methylmean,na.rm=T))*100)
-                    print(range(methylmean,na.rm=T))
-                } else {
-                    meanmethylround <- round(methylmean)
-                }
-                meanmethylround[meanmethylround==0] <- 1
-                df3i$fill <- paste(meanmethylround)
-                df3 <- rbind.data.frame(df3,df3i)
-            }
-        }
-    } else {
-        print('No EMR')
-    }
-    
-    #Add DNA alterations to plot dataframes
-    if(isgof) {
-        covs$n_alleles <- 2
-        for(j in 1:length(gof)) {
-            namegof <- gof[j]
-            samplesalt <- samples2use[all[samples2use,namegof]]
-            for(samplealt in samplesalt) {
-                covs[samplealt,'n_alleles'] <- 3
-                count <- is.na(df1[samplealt,'fill']) + is.na(df2[samplealt,'fill'])
-                if(count>0) {
-                    df1[samplealt,'fill'] <- namegof
-                }
-            }
-        }
-    } else {
-        covs$n_alleles <- 2-all[samples2use,'n_alleles_inactivated']
-        for(j in 1:length(lof)) {
-            namelof <- lof[j]
-            samplesalt <- samples2use[all[samples2use,namelof]]
-            for(samplealt in samplesalt) {
-                if(namelof=='CNA_2') {
-                    df1[samplealt,'fill'] <- namelof
-                    df2[samplealt,'fill'] <- namelof
-                } else {
-                    count <- is.na(df1[samplealt,'fill']) + is.na(df2[samplealt,'fill'])
-                    if(count>0) {
-                        df1[samplealt,'fill'] <- namelof
-                    }
-                }
-            }
-        }
-    }
-    
-    if(groupalts) {
-        collvls <- samples2use[order(is.na(df1$fill),expr)]
-    } else {
-        collvls <- samples2use[order(expr)]
-    }
-    
-    df <- rbind.data.frame(df1,df3,dfexpr)
-    df$x = factor(df$x,levels=collvls)
-    df$fill = factor(df$fill,levels=grouplvls)
-    rowsna <- is.na(df$fill)
-    df <- df[!rowsna,]
-    
-    #Compare linear models
-    rows2keep <- rowSums(is.na(covs))==0
-    
-    brks <- c(1,3:(4+numbest))
-    rowlabs <- c('TPM','DNA1',paste('Methyl',1:numbest,sep=''))
-    lm1 <- lm(expr~n_alleles,covs[rows2keep,])
-    lm2 <- lm(expr~.,covs[rows2keep,])
-    pval <- anova(lm1,lm2)[2,'Pr(>F)']
-    #print(summary(lm1)$adj.r.squared)
-    #print(summary(lm2)$adj.r.squared)
-    
-    colors <- colors[names(colors) %in% df$fill]
-    
-    if(logexpr) {
-        rowlabs[1] <- 'Log2(TPM)+1'
-    }
-    
-    ggplot(df,aes(x=x,y=y,width=0.5,height=ht))+geom_tile(aes(fill=fill))+
-        scale_fill_manual(values=colors,breaks=c(gof,lof))+theme_classic()+
-        #theme(axis.text.x=element_text(angle=90, hjust=1))+
-        theme(axis.text.x=element_blank(),axis.ticks.x=element_blank())+
-        xlab(paste('ANOVA P:',signif(pval,4)))+
-        scale_y_reverse(name=genename,minor_breaks=c(2.05,4.5),breaks=brks,labels=rowlabs)+
-        theme(panel.grid.minor=element_line(colour='black',size=0.5))
-    
-    #covs$n_alleles = factor(covs$n_alleles)
-    #p2 <- ggplot(covs,aes(x=n_alleles,y=V2))+geom_boxplot()+theme_classic()
-}
 
 #gets the mean methylation for a region given the path to the gene-level slice files
 meanmethyl = function(id, genepath, start, end) {
@@ -1425,4 +1538,20 @@ extract_methylseqR_metadata = function(fname) {
     retval$sname = strsplit(fname, '_')[[1]][1]
     retval$chr = strsplit(fname, '_')[[1]][3]
     return(retval)
+}
+
+
+#Function to remove telomeres/centromeres from any grange object
+removetc <- function(grin) {
+    #Load in centromeres granges from ucsc
+    #Load in telomeres and other gap regions
+    return(grin[countOverlaps(grin,telomeres)==0 & countOverlaps(grin,centromeres)==0])
+}
+
+getpctoverlap = function(gr1,gr2) {
+    hits = findOverlaps(gr1,gr2,ignore.strand=T)
+    overlaps = pintersect(gr1[queryHits(hits)],gr2[subjectHits(hits)])
+    percentOverlap = width(overlaps) / width(gr1[queryHits(hits)])
+    pcts = aggregate(percentOverlap, by=list(Category=queryHits(hits)), FUN=sum)
+    return(pcts)
 }

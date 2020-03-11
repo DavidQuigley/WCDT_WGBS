@@ -19,7 +19,7 @@ tosort$ETV4 = !allele_effect('ETV4')$alleles[sample_ids_wgbs,'activating_sv']
 tosort$ETV5 = !allele_effect('ETV5')$alleles[sample_ids_wgbs,'activating_sv']
 tosort$CHD1 = !allele_effect('CHD1')$alleles[sample_ids_wgbs,'n_alleles_inactivated']==2
 tosort$SPOP = !allele_effect('SPOP')$alleles[sample_ids_wgbs,'inactivating_missense']
-tosort$CDK12 = !allele_effect('CDK12')$alleles[sample_ids_wgbs,'n_alleles_inactivated']==2
+#tosort$CDK12 = !allele_effect('CDK12')$alleles[sample_ids_wgbs,'n_alleles_inactivated']==2
 tosort$RB1 = !allele_effect('RB1')$alleles[sample_ids_wgbs,'n_alleles_inactivated']==2
 tosort$PTEN = !allele_effect('PTEN')$alleles[sample_ids_wgbs,'n_alleles_inactivated']==2
 tosort$MYC = !allele_effect('MYC')$alleles[sample_ids_wgbs,'CNA_amp']
@@ -59,20 +59,20 @@ genes2use = rbind.data.frame(
     cbind.data.frame(gene='NKX3-1',gof=FALSE),
     cbind.data.frame(gene='FOLH1',gof=TRUE),
     cbind.data.frame(gene='SCHLAP1',gof=TRUE),
-    cbind.data.frame(gene='PCAT14',gof=TRUE),
-    cbind.data.frame(gene='PCGEM1',gof=TRUE), #PCAT9
-    cbind.data.frame(gene='CTBP1-AS',gof=TRUE), #PCAT10
-    cbind.data.frame(gene='MYC',gof=TRUE),
+    #cbind.data.frame(gene='PCAT14',gof=TRUE),
+    #cbind.data.frame(gene='PCGEM1',gof=TRUE), #PCAT9
+    #cbind.data.frame(gene='CTBP1-AS',gof=TRUE), #PCAT10
     cbind.data.frame(gene='PIK3CA',gof=TRUE),
-    cbind.data.frame(gene='AXL',gof=TRUE),
+    cbind.data.frame(gene='MYC',gof=TRUE),
+    #cbind.data.frame(gene='AXL',gof=TRUE),
     cbind.data.frame(gene='SPOP',gof=FALSE),
     cbind.data.frame(gene='CHD1',gof=FALSE),
     cbind.data.frame(gene='RB1',gof=FALSE),
     cbind.data.frame(gene='TP53',gof=FALSE),
     cbind.data.frame(gene='BRCA2',gof=FALSE),
-    cbind.data.frame(gene='BRCA1',gof=FALSE),
-    cbind.data.frame(gene='ZFHX3',gof=FALSE),
-    cbind.data.frame(gene='GSTP1',gof=FALSE)
+    cbind.data.frame(gene='BRCA1',gof=FALSE)
+    #cbind.data.frame(gene='ZFHX3',gof=FALSE),
+    #cbind.data.frame(gene='GSTP1',gof=FALSE)
 )
 
 genes2use$gene = paste(genes2use$gene)
@@ -88,7 +88,7 @@ numgenes = dim(genes2use)[1]
 
 collvls = paste(tosort[order(tosort$ERG,tosort$ETV1,tosort$ETV4,tosort$ETV5,
                              tosort$CHD1,tosort$SPOP,
-                             tosort$CDK12,tosort$RB1,tosort$PTEN,tosort$MYC),
+                             tosort$RB1,tosort$PTEN,tosort$MYC),
                        'sample_ids_wgbs'])
 
 df = data.frame(

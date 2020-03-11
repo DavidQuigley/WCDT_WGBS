@@ -12,4 +12,4 @@ p6=plot_gene_methylation_across_samples("TDRD1") + theme(legend.position = "none
 
 ggarrange(plotlist=list( p1, p2, p3, p4, p5, p6),
           ncol = 3, nrow=2)
-
+ggsave(fn_figure3b,width=8,height=4,useDingbats=FALSE)

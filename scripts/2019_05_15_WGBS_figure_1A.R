@@ -1,4 +1,4 @@
-#source('/Volumes/datasets_1/human_sequence_prostate_WGBS/reproduce/scripts/2019_05_15_prepare_environment.r')
+#source('~/mnt/data1/projects/WCDT_WGBS_2019/WCDT_WGBS/scripts/2019_05_15_prepare_environment.r')
 
 # Plots Figure 1A
 
@@ -94,6 +94,9 @@ df6 <- rbind.data.frame(
     cbind.data.frame(sample=df6slice$sample,count=df6slice$INS,group='INS'),
     cbind.data.frame(sample=df6slice$sample,count=df6slice$INV,group='INV'))
 
+df6$color = rep("black", 100)
+df6$color[ match.idx( df6$sample, samples_cmp )$idx.A ] = "cornflowerblue"
+
 cols <- brewer.pal(n=5, name='Set1')
 plist <- list()
 plist[[1]] <- ggplot(df1,aes(x=sample,y=count,fill=group))+theme_classic()+geom_bar(stat='identity')+
@@ -108,14 +111,14 @@ plist[[2]] <- ggplot(df3,aes(x=sample,y=count,fill=group))+theme_classic()+geom_
     scale_fill_brewer(palette='Dark2')+ylab('CpG#')
 plist[[3]] <- ggplot(df5,aes(x=sample,y=percent.copy.altered,fill=namecn))+theme_classic()+geom_bar(stat='identity')+
     theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank(),legend.position = "none")+
-    scale_fill_manual(values='black')+ylab('% CN Altered')
+    scale_fill_manual(values='darkgrey')+ylab('% CN Altered')
 plist[[4]] <- ggplot(df5,aes(x=sample,y=mutation_count,fill=namemut))+theme_classic()+geom_bar(stat='identity')+
     theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank(),legend.position = "none")+
-    scale_fill_manual(values='black')+ylab('Mut/Mb')+scale_y_log10() 
+    scale_fill_manual(values='darkgrey')+ylab('Mut/Mb')+scale_y_log10() 
 
 plist[[5]] <- ggplot(df6,aes(x=sample,y=count,fill=group))+theme_classic()+geom_bar(stat='identity')+
     theme(axis.title.x=element_blank(),
-          axis.text.x=element_text(angle=90,hjust=1,vjust=0.5),
+          axis.text.x=element_text(angle=90,hjust=1,vjust=0.5,colour=df6$color),
           axis.ticks.x=element_blank(),
           legend.position = "none")+ 
     scale_fill_brewer(palette='Set2')+ylab('# SV')
@@ -125,4 +128,5 @@ ggarrange(plotlist=plist,
           nrow=length(plist),
           heights=c(3,1,1,1,2) ,
           align="v")
+ggsave(fn_fig1a, height=8, width=14)
 

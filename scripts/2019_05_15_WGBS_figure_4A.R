@@ -1,6 +1,6 @@
 #source('/Volumes/datasets_1/human_sequence_prostate_WGBS/reproduce/scripts/2019_05_15_prepare_environment.r')
 
-# Plots figure 3A
+# Plots figure 4A
 
 fdrcut = 0.05
 
@@ -131,12 +131,13 @@ text_color[ dfplot$group=="ANDROGEN_RESPONSE"] = "white"
 text_color[ dfplot$group=="Total"] = "white"
 text_color[ dfplot$group=="Housekeeping"] = "white"
 
-
+pdf( fn_figure4a, height=5, width=7)
 par(mar=c(2,5,1,1))
 b=barplot( dfplot$percent, xaxs="i", ylab="% of genes in pathway", ylim=c(-25,80), xlim=c(0, 60),
          col=colors, axes=FALSE)
 axis(2, at=seq(from=0, to=80, by=10), labels = seq(from=0, to=80, by=10), las=1 )
 idx = which( dfplot$fdr < 0.05 )
 text( b[idx], dfplot$percent[idx]+2, "*", font=2, cex=2)
-text( b, rep(1,dim(dfplot)[1]), dfplot$n_in_pathway, cex=0.75, srt=90, font=1, col=text_color, adj=0  )
-text( b, rep(-1,dim(dfplot)[1]), tolower(dfplot$group), cex=0.6, srt=90, font=1, srt=-45, adj=0  )
+#text( b, rep(1,dim(dfplot)[1]), dfplot$n_in_pathway, cex=0.75, srt=90, font=1, col=text_color, adj=0  )
+#text( b, rep(-1,dim(dfplot)[1]), tolower(dfplot$group), cex=0.6, srt=90, font=1, srt=-45, adj=0  )
+dev.off()
