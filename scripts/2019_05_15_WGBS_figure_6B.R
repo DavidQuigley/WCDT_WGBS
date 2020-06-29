@@ -1,20 +1,25 @@
 window = 1000000
-fn_DSS_adeno_benign
-grdss  = dss_met_bp
+grdss  = dss_metbp
 samples2use  = setdiff(sample_ids_wgbs,samples_hypermut)
 
 rowsannovarfull = annovar_full$Chr %in% chromosomes & annovar_full$sample %in% samples2use
 mutgr = makeGRangesFromDataFrame(annovar_full[rowsannovarfull,])
 
-rows2use = rows_manta_pass & data_manta_slim$sample_id %in% samples2use
-dfmanta1 = data_manta_slim[rows2use,c('chr1','pos1','pos1')]
+#rows2use = rows_manta_pass & data_manta_slim$sample_id %in% samples2use
+#dfmanta1 = data_manta_slim[rows2use,c('chr1','pos1','pos1')]
+#colnames(dfmanta1) = c('chr','start','end')
+#dfmanta2 = data_manta_slim[rows2use,c('chr2','pos2','pos2')]
+#colnames(dfmanta2) = c('chr','start','end')
+rows2use = list_sv_m$sample_id %in% samples2use
+dfmanta1 = list_sv_m[rows2use,c('chrom_start','pos_start','pos_start')]
 colnames(dfmanta1) = c('chr','start','end')
-dfmanta2 = data_manta_slim[rows2use,c('chr2','pos2','pos2')]
+dfmanta2 = list_sv_m[rows2use,c('chrom_end','pos_end','pos_end')]
 colnames(dfmanta2) = c('chr','start','end')
-rowsmissing = is.na(dfmanta2$start)
-dfmanta2[rowsmissing,'chr'] = dfmanta1[rowsmissing,'chr']
-dfmanta2[rowsmissing,'start'] = dfmanta1[rowsmissing,'start']
-dfmanta2[rowsmissing,'end'] = dfmanta1[rowsmissing,'end']
+
+#rowsmissing = is.na(dfmanta2$start)
+#dfmanta2[rowsmissing,'chr'] = dfmanta1[rowsmissing,'chr']
+#dfmanta2[rowsmissing,'start'] = dfmanta1[rowsmissing,'start']
+#dfmanta2[rowsmissing,'end'] = dfmanta1[rowsmissing,'end']
 grmanta = makeGRangesFromDataFrame(rbind.data.frame(dfmanta1,dfmanta2))
 
 grdss = removetc(grdss)
@@ -31,7 +36,7 @@ for(i in 1:length(chrsizes)) {
     df = rbind.data.frame(df,dfchr)
 }
 
-gr = makeGRangesFromDataFrame(df,keep.extra.columns=T)
+gr = makeGRangesFromDataFrame(df,keep.extra.columns=TRUE)
 
 exclude = getpctoverlap(gr,c(centromeres,telomeres))
 rownum2exclude = exclude[exclude$x>0.5,'Category']
