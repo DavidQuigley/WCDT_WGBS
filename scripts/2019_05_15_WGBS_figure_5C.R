@@ -72,45 +72,6 @@ colnames(erg) = c('chrom','start','end','value')
 ergvcap = read.delim(fn_chipseq_erg_vcap, header=FALSE, sep='\t', stringsAsFactors=FALSE, strip.white=T)
 colnames(ergvcap) = c('chrom','start','end','value')
 
-## MANTA tracks
-print('Sliding windows for SVs')
-fusionrows = (data_manta_slim$chr1==chr & inrange(data_manta_slim$pos1,start,end)) |
-    (data_manta_slim$chr2==chr & inrange(data_manta_slim$pos2,start,end)) |
-    (data_manta_slim$chr1==data_manta_slim$chr2 & data_manta_slim$chr1==chr &
-         overlap(data_manta_slim$pos1,data_manta_slim$pos2,start,end)) &
-    data_manta_slim$sample_id %in% sample_ids_wgbs
-fusionrows = fusionrows & rows_manta_pass
-fusionrows[is.na(fusionrows)] = FALSE
-
-cols2keep = c('chr1','pos1','chr2','pos2','svtype','sample_id')
-plot_sv = data_manta_slim[fusionrows,cols2keep]
-rowsdel = plot_sv$svtype=='MantaDEL'
-rowsinv = plot_sv$svtype=='MantaINV'
-rowsins = plot_sv$svtype=='MantaINS'
-rowsbnd = plot_sv$svtype=='MantaBND'
-rowsdup = plot_sv$svtype=='MantaDUP'
-bed_mantadel = svwindow(plot_sv[rowsdel,],chr,start,end,endsonly=FALSE, extra=0, window=1000)
-bed_mantainv = svwindow(plot_sv[rowsinv,],chr,start,end, extra=0, window=1000)
-bed_mantabnd = svwindow(plot_sv[rowsbnd,],chr,start,end, extra=0, window=1000)
-bed_mantadup = svwindow(plot_sv[rowsdup,],chr,start,end,endsonly=FALSE, extra=0, window=1000)
-bed_mantains = svwindow(plot_sv[rowsins,],chr,start,end, extra=0, window=1000)
-
-## CN tracks
-rowsbedcn = copycat_bed$sample_id %in% sample_ids_wgbs & copycat_bed$chr==chr
-rowsbedgain = rowsbedcn & copycat_bed$call=='GAIN'
-rowsbedloss = rowsbedcn & copycat_bed$call=='LOSS'
-bed_gain = slidingwindow(copycat_bed[rowsbedgain,-4:-6],chr,start,end, extra=0, window=1000)
-bed_loss = slidingwindow(copycat_bed[rowsbedloss,-4:-6],chr,start,end, extra=0, window=1000)
-
-## Mutation tracks
-rowsannovar = annovar_full$sample %in% sample_ids_wgbs &
-    overlap(annovar_full$Start,annovar_full$End,start,end) &
-    annovar_full$Chr==chr
-bed_mut_temp = annovar_full[rowsannovar,c(1:3)]
-colnames(bed_mut_temp) = c('chrom','start','end')
-bed_mut_temp$value = 1
-bed_mut = slidingwindow(bed_mut_temp,chr,start,end,FALSE, extra=0, window=1000)
-
 # Load UMRs
 print('LOAD UMRS')
 hmrbin = data.frame(bins=1:((end-start)/window))
@@ -261,7 +222,7 @@ hic_prec = readhic(fn_hic_prec)
 #######################################################################
 
 pdf(file=fn_figure5c, onefile=TRUE, width=12, height=10)
-matrows = c(1,1,rep(2,10),3,3,4:numplots)
+matrows = c(1,2,2,3,3,4:numplots)
 layout(matrix(matrows, length(matrows), 1, byrow=TRUE))
 par(mai=c(0.05,1,0.05,0.5))
 
@@ -275,6 +236,14 @@ if(sum(exonrows)>0) {
     plot.new()
 }
 
+## Plot EMR
+emr_range = c(-0.8,0.6)
+plotBedgraph(peaks[,peakscols1],chr,start,end,color='black',range=emr_range)
+
+axis(side=2,las=2,tcl=.2)
+mtext('Rho',side=2,line=4,cex=0.5)
+abline(h=0, col='black')
+
 ## Plot HMR
 par(mai=c(0.05,1,0.05,0))
 hmrslice = hmrdf[rowshmr,c(1:3,9)]
@@ -285,9 +254,9 @@ hmrslice$score = 1
 hmrslice$strand = 1
 hmrslice$color = 'black'
 
-rows_loc = hmrslice$sample %in% upitt_localized_tumor
+rows_loc = hmrslice$sample %in% samples_upitt_localized_tumor
 hmrslice[rows_loc,'color'] = 'gray50'
-rows_ben = hmrslice$sample %in% upitt_benign_prostate
+rows_ben = hmrslice$sample %in% samples_upitt_benign_prostate
 hmrslice[rows_ben,'color'] = 'gray80'
 rows_nt = hmrslice$sample %in% samples_normal
 hmrslice[rows_nt,'color'] = 'slategray'
@@ -299,17 +268,11 @@ roworder = as.numeric(factor(hmrslice$sample,
 rows2keep = !is.na(roworder)
 hmrslice = hmrslice[rows2keep,]
 roworder = roworder[rows2keep]
-plotBed(hmrslice,chr,start,end,row='supplied',rownumber=roworder,color=hmrslice$color)
+plotBed(hmrslice[9:519],chr,start,end,row='supplied',rownumber=roworder[9:519],color=hmrslice$color[9:519])
 axis(side=2,las=2,tcl=.2)
 mtext('HMR',side=2,line=4,cex=0.5)
 
-## Plot EMR
-emr_range = c(-0.8,0.6)
-plotBedgraph(peaks[,peakscols],chr,start,end,color='black',range=emr_range)
 
-axis(side=2,las=2,tcl=.2)
-mtext('Rho',side=2,line=4,cex=0.5)
-abline(h=0, col='black')
 
 ## Plot chipseq
 cols = c('red','gray50')

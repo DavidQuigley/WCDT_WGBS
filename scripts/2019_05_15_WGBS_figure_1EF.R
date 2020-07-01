@@ -112,14 +112,14 @@ ggsave(fn_figure1f,width=2, height=3,useDingbats=FALSE)
 
 
 
-wilcox.test( ssi$count[ ssi$group=="CpG_island" & !ssi$CMP], 
-             ssi$count[ssi$group=="CpG_island" & ssi$CMP] )
+wilcox.test( ssi$count[ ssi$group=="CpG_island" & ssi$CMP=="non-CMP"], 
+             ssi$count[ssi$group=="CpG_island" & ssi$CMP=="CMP"] )
 # W = 770, p-value = 0.4666
-wilcox.test(ssi$count[ (ssi$group=="CpG_shore"|ssi$group=="CpG_shelf") & !ssi$CMP], 
-            ssi$count[( ssi$group=="CpG_shore" | ssi$group=="CpG_shelf") & ssi$CMP])
+wilcox.test(ssi$count[ (ssi$group=="CpG_shore"|ssi$group=="CpG_shelf") & ssi$CMP=="non-CMP"], 
+            ssi$count[( ssi$group=="CpG_shore" | ssi$group=="CpG_shelf") & ssi$CMP=="CMP"])
 # W = 6154.5, p-value = 9.928e-16
-wilcox.test( c(df$n_outside_shelf[!df$CMP]  ), 
-             c(df$n_outside_shelf[df$CMP]  ))
+wilcox.test( c(df$n_outside_shelf[df$CMP=="non-CMP"]  ), 
+             c(df$n_outside_shelf[df$CMP=="CMP"]  ))
 # W = 1707, p-value = 1.661e-12
 
 

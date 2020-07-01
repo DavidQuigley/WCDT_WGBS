@@ -498,8 +498,8 @@ df_meth = data.frame(
     stringsAsFactors=FALSE)
 df_meth = df_meth[order(df_meth$median),]
     
-barplot(df_meth$median, col=df_meth$color)
-boxplot( df_meth$median~df_meth$color, names=c("CMP", "non-CMP"), main="median methylation level", ylim=c(0, 60), las=1)
+#barplot(df_meth$median, col=df_meth$color)
+#boxplot( df_meth$median~df_meth$color, names=c("CMP", "non-CMP"), main="median methylation level", ylim=c(0, 60), las=1)
 
 
 # restrict to the top 10% of variability in HMR by standard deviation
@@ -607,7 +607,7 @@ dist2 = function(x) {
 
 dimnames(csidebar)[[2]][2] = "Select muts."
 main_title = ""
-fn_figure1b_noheat = '/notebook/human_sequence_prostate_WGBS/drafts/NatureGenetics/revision/submitted/figure_1b_noheat.pdf'
+fn_figure1b_noheat = '/notebook/human_sequence_prostate_WGBS/reproduce/WCDT_WGBS/figures/figure_S4.pdf'
 pdf( fn_figure1b_noheat, height=12, width=9)
 h=heatmap.3(mat_hmr_recurrent, 
           showHeatmap=FALSE,
@@ -633,3 +633,28 @@ h=heatmap.3(mat_hmr_recurrent,
           ColSideColorsSize=8, RowSideColorsSize=1)
 dev.off()
 
+fn_figure1b = '/notebook/human_sequence_prostate_WGBS/reproduce/WCDT_WGBS/figures/figure_1b.pdf'
+pdf( fn_figure1b, height=12, width=9)
+h=heatmap.3(mat_hmr_recurrent, 
+            showHeatmap=TRUE,
+            hclustfun=hclust, 
+            distfun=dist,
+            na.rm=TRUE, 
+            scale='none', 
+            dendrogram="column", margins=c(8,1),
+            Rowv=TRUE, Colv=TRUE, 
+            ColSideColors=csidebar, 
+            RowSideColors=rsidebar, 
+            symbreaks=FALSE, 
+            key=FALSE, 
+            symkey=FALSE,
+            lhei=c(1,5), 
+            lwid=c(0.75,4), 
+            cexCol=0.5,
+            cexRow=1,
+            density.info="none", trace="none",
+            labCol=colnames(mat_hmr_recurrent), 
+            labRow=rep("",(dim(mat_hmr_recurrent)[1])), 
+            main=main_title, col=color,
+            ColSideColorsSize=8, RowSideColorsSize=1)
+dev.off()

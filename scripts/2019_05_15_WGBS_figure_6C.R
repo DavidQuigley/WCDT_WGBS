@@ -92,22 +92,22 @@ dssmat.tfbs.erg <- getDSSVals(curtest.tfbs.erg.window.gr, dss_metbp, window.sz)
 dssmat.final <- cbind.data.frame(Position=1:window.sz - window.sz/2, DiffMethyl=colMeans(dssmat.tfbs.foxa1))
 dssmat.final[,2] <- dssmat.final[,2] * 100 #convert decimal to percentage
 dssmat.final.foxa1 <- dssmat.final
-save(dssmat.final.foxa1, file=fn_spline_foxa1)
+#save(dssmat.final.foxa1, file=fn_spline_foxa1)
 
 dssmat.final <- cbind.data.frame(Position=1:window.sz - window.sz/2, DiffMethyl=colMeans(dssmat.tfbs.hoxb13))
 dssmat.final[,2] <- dssmat.final[,2] * 100 #convert decimal to percentage
 dssmat.final.hoxb13 <- dssmat.final
-save(dssmat.final.hoxb13, file=fn_spline_hoxb13)
+#save(dssmat.final.hoxb13, file=fn_spline_hoxb13)
 
 dssmat.final <- cbind.data.frame(Position=1:window.sz - window.sz/2, DiffMethyl=colMeans(dssmat.tfbs.ar))
 dssmat.final[,2] <- dssmat.final[,2] * 100 #convert decimal to percentage
 dssmat.final.ar <- dssmat.final
-save(dssmat.final.ar, file=fn_spline_ar)
+#save(dssmat.final.ar, file=fn_spline_ar)
 
 dssmat.final <- cbind.data.frame(Position=1:window.sz - window.sz/2, DiffMethyl=colMeans(dssmat.tfbs.erg))
 dssmat.final[,2] <- dssmat.final[,2] * 100 #convert decimal to percentage
 dssmat.final.erg <- dssmat.final
-save(dssmat.final.erg, file=fn_spline_erg)
+#save(dssmat.final.erg, file=fn_spline_erg)
 
 
 # Plot FOXA1
@@ -118,7 +118,7 @@ cur.ddsplot <- ggplot(dssmat.final.foxa1, aes(x=Position, y=DiffMethyl)) +
     theme_classic() +
     theme(axis.title.y=element_text(size=8.5), axis.text.y=element_text(size=9.5))
 cur.ddsplot
-ggsave(filename=fn_figure6d_foxa1, plot=cur.ddsplot, width=4,h=3)
+ggsave(filename=fn_figure6c_foxa1, plot=cur.ddsplot, width=4,h=3)
 
 # Plot HOXB13
 cur.ddsplot <- ggplot(dssmat.final.hoxb13, aes(x=Position, y=DiffMethyl)) +
@@ -128,7 +128,7 @@ cur.ddsplot <- ggplot(dssmat.final.hoxb13, aes(x=Position, y=DiffMethyl)) +
     theme_classic() +
     theme(axis.title.y=element_text(size=8.5), axis.text.y=element_text(size=9.5))
 cur.ddsplot
-ggsave(filename=fn_figure6d_hoxb13, plot=cur.ddsplot, width=4,h=3)
+ggsave(filename=fn_figure6c_hoxb13, plot=cur.ddsplot, width=4,h=3)
 
 # Plot AR
 cur.ddsplot <- ggplot(dssmat.final.ar, aes(x=Position, y=DiffMethyl)) +
@@ -138,7 +138,7 @@ cur.ddsplot <- ggplot(dssmat.final.ar, aes(x=Position, y=DiffMethyl)) +
     theme_classic() +
     theme(axis.title.y=element_text(size=8.5), axis.text.y=element_text(size=9.5))
 cur.ddsplot
-ggsave(filename=fn_figure6d_ar, plot=cur.ddsplot, width=4,h=3)
+ggsave(filename=fn_figure6c_ar, plot=cur.ddsplot, width=4,h=3)
 
 
 # Plot ERG
@@ -149,7 +149,7 @@ cur.ddsplot <- ggplot(dssmat.final.erg, aes(x=Position, y=DiffMethyl)) +
     theme_classic() +
     theme(axis.title.y=element_text(size=8.5), axis.text.y=element_text(size=9.5))
 cur.ddsplot
-ggsave(filename=fn_figure6d_erg, plot=cur.ddsplot, width=4,h=3)
+ggsave(filename=fn_figure6c_erg, plot=cur.ddsplot, width=4,h=3)
 
 
 ################################
@@ -163,9 +163,8 @@ dssmat.curtest.tfbs <- getDSSVals(curtest.tfbs.window.gr, dss_metbp, window.sz)
 dssmat.final <- cbind.data.frame(Position=1:window.sz - window.sz/2, DiffMethyl=colMeans(dssmat.curtest.tfbs))
 dssmat.final[,2] <- dssmat.final[,2] * 100 #convert decimal to percentage
 dssmat.final.h3k27ac <- dssmat.final
-save(dssmat.final.h3k27ac, file=fn_spline_h3k27ac)
+#save(dssmat.final.h3k27ac, file=fn_spline_h3k27ac)
 
-library(ggplot2)
 cur.ddsplot <- ggplot(dssmat.final.h3k27ac, aes(x=Position, y=DiffMethyl)) +
     labs(x="Relative genomic position", y = "Mean differential methylation (%)") +
     geom_line(col='dodgerblue1', size=1.5) +
@@ -173,6 +172,6 @@ cur.ddsplot <- ggplot(dssmat.final.h3k27ac, aes(x=Position, y=DiffMethyl)) +
     theme_classic() +
     theme(axis.title.y=element_text(size=8.5), axis.text.y=element_text(size=9.5))
 cur.ddsplot
-ggsave(filename=sprintf('/Users/Will/Desktop/med_school_homebase/feng_lab/wgbs/results/global.analyses/dss.tfbs/2019-apr12/H3K27ac.dss.pdf'), plot=cur.ddsplot, width=4,h=3)
+ggsave(filename=fn_figure6c_h3k27ac, plot=cur.ddsplot, width=4,h=3)
 
 

@@ -71,29 +71,29 @@ colnames(erg) = c('chrom','start','end','value')
 
 ergvcap = read.delim(fn_chipseq_erg_vcap, header=FALSE, sep='\t', stringsAsFactors=FALSE, strip.white=T)
 colnames(ergvcap) = c('chrom','start','end','value')
-
-## MANTA tracks
-print('Sliding windows for SVs')
-fusionrows = (data_manta_slim$chr1==chr & inrange(data_manta_slim$pos1,start,end)) |
-    (data_manta_slim$chr2==chr & inrange(data_manta_slim$pos2,start,end)) |
-    (data_manta_slim$chr1==data_manta_slim$chr2 & data_manta_slim$chr1==chr &
-         overlap(data_manta_slim$pos1,data_manta_slim$pos2,start,end)) &
-    data_manta_slim$sample_id %in% sample_ids_wgbs
-fusionrows = fusionrows & rows_manta_pass
-fusionrows[is.na(fusionrows)] = FALSE
-
-cols2keep = c('chr1','pos1','chr2','pos2','svtype','sample_id')
-plot_sv = data_manta_slim[fusionrows,cols2keep]
-rowsdel = plot_sv$svtype=='MantaDEL'
-rowsinv = plot_sv$svtype=='MantaINV'
-rowsins = plot_sv$svtype=='MantaINS'
-rowsbnd = plot_sv$svtype=='MantaBND'
-rowsdup = plot_sv$svtype=='MantaDUP'
-bed_mantadel = svwindow(plot_sv[rowsdel,],chr,start,end,endsonly=FALSE, extra=0, window=1000)
-bed_mantainv = svwindow(plot_sv[rowsinv,],chr,start,end, extra=0, window=1000)
-bed_mantabnd = svwindow(plot_sv[rowsbnd,],chr,start,end, extra=0, window=1000)
-bed_mantadup = svwindow(plot_sv[rowsdup,],chr,start,end,endsonly=FALSE, extra=0, window=1000)
-bed_mantains = svwindow(plot_sv[rowsins,],chr,start,end, extra=0, window=1000)
+# 
+# ## MANTA tracks
+# print('Sliding windows for SVs')
+# fusionrows = (data_manta_slim$chr1==chr & inrange(data_manta_slim$pos1,start,end)) |
+#     (data_manta_slim$chr2==chr & inrange(data_manta_slim$pos2,start,end)) |
+#     (data_manta_slim$chr1==data_manta_slim$chr2 & data_manta_slim$chr1==chr &
+#          overlap(data_manta_slim$pos1,data_manta_slim$pos2,start,end)) &
+#     data_manta_slim$sample_id %in% sample_ids_wgbs
+# fusionrows = fusionrows & rows_manta_pass
+# fusionrows[is.na(fusionrows)] = FALSE
+# 
+# cols2keep = c('chr1','pos1','chr2','pos2','svtype','sample_id')
+# plot_sv = data_manta_slim[fusionrows,cols2keep]
+# rowsdel = plot_sv$svtype=='MantaDEL'
+# rowsinv = plot_sv$svtype=='MantaINV'
+# rowsins = plot_sv$svtype=='MantaINS'
+# rowsbnd = plot_sv$svtype=='MantaBND'
+# rowsdup = plot_sv$svtype=='MantaDUP'
+# bed_mantadel = svwindow(plot_sv[rowsdel,],chr,start,end,endsonly=FALSE, extra=0, window=1000)
+# bed_mantainv = svwindow(plot_sv[rowsinv,],chr,start,end, extra=0, window=1000)
+# bed_mantabnd = svwindow(plot_sv[rowsbnd,],chr,start,end, extra=0, window=1000)
+# bed_mantadup = svwindow(plot_sv[rowsdup,],chr,start,end,endsonly=FALSE, extra=0, window=1000)
+# bed_mantains = svwindow(plot_sv[rowsins,],chr,start,end, extra=0, window=1000)
 
 ## CN tracks
 rowsbedcn = copycat_bed$sample_id %in% sample_ids_wgbs & copycat_bed$chr==chr
@@ -291,9 +291,9 @@ if(use2) {
 } else {
     hmrslice$color = 'black'
 }
-rows_loc = hmrslice$sample %in% upitt_localized_tumor
+rows_loc = hmrslice$sample %in% samples_upitt_localized_tumor
 hmrslice[rows_loc,'color'] = 'gray50'
-rows_ben = hmrslice$sample %in% upitt_benign_prostate
+rows_ben = hmrslice$sample %in% samples_upitt_benign_prostate
 hmrslice[rows_ben,'color'] = 'gray80'
 rows_nt = hmrslice$sample %in% samples_normal
 hmrslice[rows_nt,'color'] = 'slategray'
@@ -374,25 +374,4 @@ mtext('ERG',side=2,line=4,cex=0.5)
 abline(h=0, col='black')
 legend("topright",inset=0.025,legend=c('VCaP','Metastasis'),
        fill=opaque(cols),border=cols,cex=0.5)
-
-plotBedpe(chiapet_ar,chr,start,end,heights=chiapet_ar$score,plottype='loops',
-              color='navy',flip=F)
-axis(side=2,las=2,tcl=.2)
-mtext('AR',side=2,line=4,cex=0.5)
-abline(h=0, col='black')
-
-
-par(mai=c(0.05,1,0,0))
-
-plotBedpe(chiapet_erg,chr,start,end,heights=chiapet_erg$score,plottype='loops',
-          color='royalblue3',flip=T)
-
-axis(side=2,las=2,tcl=.2)
-mtext('ERG',side=2,line=4,cex=0.5)
-abline(h=0, col='black')
-
-
-plotBedgraph(bed_mantadup,chr,start,end,color='plum4')
-axis(side=2,las=2,tcl=.2)
-mtext("Tandem Dup",side=2,line=4,cex=0.5)
 dev.off()

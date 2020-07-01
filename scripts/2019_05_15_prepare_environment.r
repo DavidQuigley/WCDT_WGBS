@@ -6,22 +6,21 @@ library(ggplot2)
 library(gplots)
 library(grid)
 library(ggpubr)
-#library(mixOmics)
 library(plotrix)
 library(plyr)
 library(matrixStats)
 library(reshape2)
+library(rCGH) # Load hg38 chromosomal info
 library(RColorBrewer)
 library(Rtsne)
-#library(RVAideMemoire)
 library(rtracklayer)
 library(scales)
 library(stringr)
 library(Sushi)
 library(wesanderson)
 
-BASE_DIR = '~/mnt/data1/projects/WCDT_WGBS_2019/WCDT_WGBS'
-#BASE_DIR = '/data1/projects/WCDT_WGBS_2019/WCDT_WGBS'
+#BASE_DIR = '~/mnt/data1/projects/WCDT_WGBS_2019/WCDT_WGBS'
+BASE_DIR = '/notebook/human_sequence_prostate_WGBS/reproduce//WCDT_WGBS'
 make_path = function(BASE_DIR, s){
     paste(BASE_DIR, s, sep='/' )
 }
@@ -36,7 +35,7 @@ source( make_path(BASE_DIR, 'scripts/2019_05_15_function_calls.R') )
 # File locations
 #######################################################################################################
 
-dir_pmd = make_path( BASE_DIR, 'secondary_data/partially_methylated_domains/input/10k')
+#dir_pmd = make_path( BASE_DIR, 'secondary_data/partially_methylated_domains/input/10k')
 fn_pmd_mu_summary = make_path( BASE_DIR, 'secondary_data/partially_methylated_domains/output/pmd_mu_summary.txt')
 
 dir_normal_wide_slice = make_path( BASE_DIR, 'secondary_data/methyl_slices_around_features/wide_slice/UPitt')
@@ -138,10 +137,11 @@ fn_spline_ar = make_path(BASE_DIR, 'secondary_data/tfbs_splines/dssmat.tfbs.foxa
 fn_spline_erg = make_path(BASE_DIR, 'secondary_data/tfbs_splines/dssmat.tfbs.foxa1.RData')
 fn_spline_h3k27ac = make_path(BASE_DIR, 'secondary_data/tfbs_splines/dssmat.tfbs.h3k27ac.RData')
 
-fn_figure6d_foxa1 = make_path(BASE_DIR, 'figures/figure6d_foxa1.pdf')
-fn_figure6d_hoxb13 = make_path(BASE_DIR, 'figures/figure6d_hoxb13.pdf')
-fn_figure6d_ar = make_path(BASE_DIR, 'figures/figure6d_ar.pdf')
-fn_figure6d_erg = make_path(BASE_DIR, 'figures/figure6d_erg.pdf')
+fn_figure6c_foxa1 = make_path(BASE_DIR, 'figures/figure6c_foxa1.pdf')
+fn_figure6c_hoxb13 = make_path(BASE_DIR, 'figures/figure6c_hoxb13.pdf')
+fn_figure6c_ar = make_path(BASE_DIR, 'figures/figure6c_ar.pdf')
+fn_figure6c_erg = make_path(BASE_DIR, 'figures/figure6c_erg.pdf')
+fn_figure6c_h3k27ac = make_path(BASE_DIR, 'figures/figure6c_h3k27ac.pdf')
 
 fn_fig1a = make_path(BASE_DIR, 'figures/figure_1a.pdf')
 fn_figure1b = make_path(BASE_DIR, 'figures/figure_1b.pdf')
@@ -163,6 +163,7 @@ fn_figure5d = make_path(BASE_DIR, 'figures/figure_5d.pdf')
 fn_figure6a = make_path(BASE_DIR, 'figures/figure_6a.png')
 fn_figure6a_colorbar = make_path(BASE_DIR, 'figures/figure_6a_colorbar.pdf')
 fn_figure6b = make_path(BASE_DIR, 'figures/figure_6b.pdf')
+fn_figure6d_h3k27ac
 fn_figure_pmd_chr16 = make_path(BASE_DIR, 'figures/figure_pmd_chr16.pdf')
 fn_figure_pmd_chrom_summary = make_path(BASE_DIR, 'figures/figure_pmd_chromosome_summary.pdf')
 fn_figure_tsne_a= make_path(BASE_DIR, 'figures/supplementary_figure_tsne_a.pdf')
@@ -219,14 +220,14 @@ chrsom = c(paste('chr', 1:22, sep=''))
 chrsex = c('chrX', 'chrY')
 chromosomes = c(paste('chr', 1:22, sep=''), 'chrX', 'chrY')
 names(chromosomes) = c("NC_000001.11","NC_000002.12","NC_000003.12","NC_000004.12",
-                        "NC_000005.10","NC_000006.12","NC_000007.14","NC_000008.11","NC_000009.12",
-                        "NC_000010.11","NC_000011.10","NC_000012.12","NC_000013.11","NC_000014.9",
-                        "NC_000015.10","NC_000016.10","NC_000017.11","NC_000018.10","NC_000019.10",
-                        "NC_000020.11","NC_000021.9","NC_000022.11","NC_000023.11","NC_000024.10")
+                       "NC_000005.10","NC_000006.12","NC_000007.14","NC_000008.11","NC_000009.12",
+                       "NC_000010.11","NC_000011.10","NC_000012.12","NC_000013.11","NC_000014.9",
+                       "NC_000015.10","NC_000016.10","NC_000017.11","NC_000018.10","NC_000019.10",
+                       "NC_000020.11","NC_000021.9","NC_000022.11","NC_000023.11","NC_000024.10")
 chrsizes = c(248956422,242193529,198295559,190214555,181538259,
-              170805979,159345973,145138636,138394717,133797422,135086622,
-              133275309,114364328,107043718,101991189,90338345,83257441,
-              80373285,58617616,64444167,46709983,50818468,156040895,57227415)
+             170805979,159345973,145138636,138394717,133797422,135086622,
+             133275309,114364328,107043718,101991189,90338345,83257441,
+             80373285,58617616,64444167,46709983,50818468,156040895,57227415)
 names(chrsizes) = chromosomes
 
 # Genomic range limits
@@ -240,22 +241,22 @@ ensembl2sym = read.table(fn_ensembl2sym, header=TRUE, row.names=1,
                          stringsAsFactors=FALSE, strip.white=TRUE)
 gencode_protein = c('protein_coding','TEC')
 gencode_pseudogene = c('transcribed_processed_pseudogene','transcribed_unitary_pseudogene',
-                        'transcribed_unprocessed_pseudogene','translated_processed_pseudogene','unitary_pseudogene',
-                        'unprocessed_pseudogene','TR_V_pseudogene','TR_J_pseudogene','IG_C_pseudogene',
-                        'IG_J_pseudogene','IG_pseudogene','IG_V_pseudogene','polymorphic_pseudogene',
-                        'processed_pseudogene','pseudogene')
+                       'transcribed_unprocessed_pseudogene','translated_processed_pseudogene','unitary_pseudogene',
+                       'unprocessed_pseudogene','TR_V_pseudogene','TR_J_pseudogene','IG_C_pseudogene',
+                       'IG_J_pseudogene','IG_pseudogene','IG_V_pseudogene','polymorphic_pseudogene',
+                       'processed_pseudogene','pseudogene')
 gencode_immune = c('TR_V_gene','TR_J_gene','TR_D_gene','TR_C_gene',
-                    'IG_C_gene','IG_D_gene','IG_J_gene','IG_V_gene')
+                   'IG_C_gene','IG_D_gene','IG_J_gene','IG_V_gene')
 gencode_noncoding = c('vaultRNA','3prime_overlapping_ncRNA','antisense',
-                       'bidirectional_promoter_lncRNA','processed_transcript',
-                       'non_coding','lincRNA','macro_lncRNA','misc_RNA','sense_intronic',
-                       'sense_overlapping','miRNA','ribozyme','rRNA','scaRNA','scRNA',
-                       'snoRNA','snRNA','sRNA','Mt_rRNA','Mt_tRNA')
+                      'bidirectional_promoter_lncRNA','processed_transcript',
+                      'non_coding','lincRNA','macro_lncRNA','misc_RNA','sense_intronic',
+                      'sense_overlapping','miRNA','ribozyme','rRNA','scaRNA','scRNA',
+                      'snoRNA','snRNA','sRNA','Mt_rRNA','Mt_tRNA')
 
 # Patient treatment and PSA responses
 #------------------------------------------------------------------------------------------------------
 txresponse = read.table(fn_treatment, header=TRUE, sep='\t',
-                         row.names=1, stringsAsFactors=FALSE, strip.white=TRUE)
+                        row.names=1, stringsAsFactors=FALSE, strip.white=TRUE)
 rownames(txresponse) = convertClinSamplenames(rownames(txresponse))
 
 # Locations of each metastatic tumor in the patient's body
@@ -269,19 +270,19 @@ metastasis_locations['DTB-167-PRO'] = 'Bone'
 # Sample identifiers
 #------------------------------------------------------------------------------------------------------
 sample_ids_wgs = c("DTB-003-BL", "DTB-005-BL", "DTB-008-BL", "DTB-009-BL", "DTB-011-BL", "DTB-018-BL", "DTB-019-PRO", "DTB-020-BL", "DTB-021-BL", 
-               "DTB-022-BL", "DTB-023-BL", "DTB-024-PRO", "DTB-034-BL", "DTB-035-BL", "DTB-036-BL", "DTB-037-BL", "DTB-040-BL", "DTB-042-BL", 
-               "DTB-053-BL", "DTB-055-PRO", "DTB-059-BL", "DTB-060-BL", "DTB-061-BL", "DTB-063-BL", "DTB-064-BL", "DTB-067-PRO", "DTB-069-BL", 
-               "DTB-071-BL", "DTB-074-BL", "DTB-077-PRO", "DTB-080-BL", "DTB-083-BL", "DTB-085-BL", "DTB-089-BL", "DTB-090-PRO", "DTB-091-BL", 
-               "DTB-092-BL", "DTB-094-BL", "DTB-097-PRO", "DTB-098-PRO2", "DTB-100-BL", "DTB-101-BL", "DTB-102-PRO", "DTB-104-BL", "DTB-111-PRO", 
-               "DTB-112-BL", "DTB-119-PRO", "DTB-121-BL", "DTB-124-BL", "DTB-126-BL", "DTB-127-PRO", "DTB-128-BL", "DTB-129-BL", "DTB-132-BL", 
-               "DTB-135-PRO", "DTB-137-PRO", "DTB-138-BL", "DTB-140-BL", "DTB-141-BL", "DTB-143-BL", "DTB-146-BL", "DTB-149-BL", "DTB-151-BL", 
-               "DTB-156-BL", "DTB-159-BL", "DTB-165-PRO", "DTB-167-PRO", "DTB-170-BL", "DTB-172-BL", "DTB-173-BL", "DTB-175-BL", "DTB-176-BL", 
-               "DTB-183-BL", "DTB-186-BL", "DTB-187-BL", "DTB-188-BL", "DTB-190-BL", "DTB-193-BL", "DTB-194-PRO", "DTB-201-PRO", "DTB-202-BL", 
-               "DTB-204-BL", "DTB-205-BL", "DTB-206-BL", "DTB-210-BL", "DTB-213-BL", "DTB-214-BL", "DTB-216-PRO", "DTB-220-BL", "DTB-222-BL", 
-               "DTB-223-BL", "DTB-232-PRO", "DTB-234-BL", "DTB-251-BL", "DTB-252-BL", "DTB-255-BL", "DTB-258-BL", "DTB-260-BL", "DTB-261-BL", 
-               "DTB-265-PRO", "DTB-266-BL")
+                   "DTB-022-BL", "DTB-023-BL", "DTB-024-PRO", "DTB-034-BL", "DTB-035-BL", "DTB-036-BL", "DTB-037-BL", "DTB-040-BL", "DTB-042-BL", 
+                   "DTB-053-BL", "DTB-055-PRO", "DTB-059-BL", "DTB-060-BL", "DTB-061-BL", "DTB-063-BL", "DTB-064-BL", "DTB-067-PRO", "DTB-069-BL", 
+                   "DTB-071-BL", "DTB-074-BL", "DTB-077-PRO", "DTB-080-BL", "DTB-083-BL", "DTB-085-BL", "DTB-089-BL", "DTB-090-PRO", "DTB-091-BL", 
+                   "DTB-092-BL", "DTB-094-BL", "DTB-097-PRO", "DTB-098-PRO2", "DTB-100-BL", "DTB-101-BL", "DTB-102-PRO", "DTB-104-BL", "DTB-111-PRO", 
+                   "DTB-112-BL", "DTB-119-PRO", "DTB-121-BL", "DTB-124-BL", "DTB-126-BL", "DTB-127-PRO", "DTB-128-BL", "DTB-129-BL", "DTB-132-BL", 
+                   "DTB-135-PRO", "DTB-137-PRO", "DTB-138-BL", "DTB-140-BL", "DTB-141-BL", "DTB-143-BL", "DTB-146-BL", "DTB-149-BL", "DTB-151-BL", 
+                   "DTB-156-BL", "DTB-159-BL", "DTB-165-PRO", "DTB-167-PRO", "DTB-170-BL", "DTB-172-BL", "DTB-173-BL", "DTB-175-BL", "DTB-176-BL", 
+                   "DTB-183-BL", "DTB-186-BL", "DTB-187-BL", "DTB-188-BL", "DTB-190-BL", "DTB-193-BL", "DTB-194-PRO", "DTB-201-PRO", "DTB-202-BL", 
+                   "DTB-204-BL", "DTB-205-BL", "DTB-206-BL", "DTB-210-BL", "DTB-213-BL", "DTB-214-BL", "DTB-216-PRO", "DTB-220-BL", "DTB-222-BL", 
+                   "DTB-223-BL", "DTB-232-PRO", "DTB-234-BL", "DTB-251-BL", "DTB-252-BL", "DTB-255-BL", "DTB-258-BL", "DTB-260-BL", "DTB-261-BL", 
+                   "DTB-265-PRO", "DTB-266-BL")
 sample_ids_wgbs = setdiff(sample_ids_wgs, "DTB-193-BL")
-                           
+
 sample_blacklist = c('DTB-004-BL', 'DTB-053-RP', 'DTB-265-BL')
 samples_hypermut = c('DTB-083-BL','DTB-126-BL')
 
@@ -293,7 +294,7 @@ samples_sra_localized_tumor = c('SRR6156038','SRR6156039','SRR6156040',
 #samples_upitt_localized_tumor = toupper(samples_upitt_localized_tumor)
 
 samples_normal = c('NT-DTB-003-BL','NT-DTB-021-BL','NT-DTB-035-BL','NT-DTB-037-BL',
-                    'NT-DTB-074-BL','NT-DTB-077-Pro','NT-DTB-104-BL','NT-DTB-124-BL', 
+                   'NT-DTB-074-BL','NT-DTB-077-Pro','NT-DTB-104-BL','NT-DTB-124-BL', 
                    'NT-DTB-188-BL','NT-DTB-194-Pro')
 samples_normal_filecase = samples_normal
 samples_normal = toupper(samples_normal)
@@ -466,11 +467,11 @@ manta_counts = manta_counts[,c(8,7,1,2,4,5)]
 copycat_bed = NULL
 filenames_cc = list.files(dir_copycat)
 for(i in 1:length(filenames_cc)) {
-	filename_bed = paste(dir_copycat, filenames_cc[i], sep='/')
-	data_i = read.table(filename_bed, header=FALSE, stringsAsFactors=FALSE, sep='\t')
-	sample_i = gsub('_copycat.bed','',filenames_cc[i],fixed=TRUE)
-	data_i$sample_id = sample_i
-	copycat_bed = rbind.data.frame(copycat_bed, data_i)
+    filename_bed = paste(dir_copycat, filenames_cc[i], sep='/')
+    data_i = read.table(filename_bed, header=FALSE, stringsAsFactors=FALSE, sep='\t')
+    sample_i = gsub('_copycat.bed','',filenames_cc[i],fixed=TRUE)
+    data_i$sample_id = sample_i
+    copycat_bed = rbind.data.frame(copycat_bed, data_i)
 }
 colnames(copycat_bed) = c('chrom','start','end', 'call','cn','strand','sample_id')
 copycat_bed$call = 'REF'
@@ -487,7 +488,7 @@ copycat_gr <- copycat_gr[copycat_gr$call != 'REF']
 annovar = read.delim(fn_annovar, header=TRUE, sep='\t', stringsAsFactors=FALSE, strip.white=TRUE)
 annovar = annotate_annovar(annovar)
 annovar_full = read.delim( fn_annovar_full, 
-                            header=TRUE, sep='\t', stringsAsFactors=FALSE, strip.white=TRUE)
+                           header=TRUE, sep='\t', stringsAsFactors=FALSE, strip.white=TRUE)
 annovar_full = annotate_annovar(annovar_full)
 
 # Chipseq track load
@@ -562,9 +563,9 @@ upstreamdf = rbind.data.frame(upstreampos,upstreamneg)
 tracks[['upstream']] = makeGRangesFromDataFrame(upstreamdf,keep.extra.columns=TRUE)
 
 downstreampos = cbind.data.frame(ensembl2sym$chr,ensembl2sym$end,ensembl2sym$end+RANGE_UP_DOWN,
-                                  ensembl2sym$strand,ensembl2sym$name)[rowspos,]
+                                 ensembl2sym$strand,ensembl2sym$name)[rowspos,]
 downstreamneg = cbind.data.frame(ensembl2sym$chr,ensembl2sym$start-RANGE_UP_DOWN,ensembl2sym$start,
-                                  ensembl2sym$strand,ensembl2sym$name)[rowsneg,]
+                                 ensembl2sym$strand,ensembl2sym$name)[rowsneg,]
 colnames(downstreampos) = c('chr','start','end','strand','gene')
 colnames(downstreamneg) = c('chr','start','end','strand','gene')
 downstreamdf = rbind.data.frame(downstreampos,downstreamneg)
@@ -679,7 +680,7 @@ gr_tsg = makeGRangesFromDataFrame(df_tsg)
 
 rows_oncogenes = ensembl2sym$name %in% setdiff(genelist_oncogenes, genelist_tumor_suppressors)
 df_oncogenes = cbind.data.frame(ensembl2sym[rows_oncogenes,'chr'],
-                                 ensembl2sym[rows_oncogenes,'start'] - PROMOTER_RANGE,
-                                 ensembl2sym[rows_oncogenes,'end'])
+                                ensembl2sym[rows_oncogenes,'start'] - PROMOTER_RANGE,
+                                ensembl2sym[rows_oncogenes,'end'])
 colnames(df_oncogenes) = c('chr','start','end')
 gr_oncogenes = makeGRangesFromDataFrame(df_oncogenes)

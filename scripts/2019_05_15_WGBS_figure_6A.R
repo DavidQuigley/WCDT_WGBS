@@ -1,6 +1,7 @@
 ###################
 # Helper functions
 ####################
+library(rCGH)
 
 # Function to plot color bar
 color.bar <- function(lut, min, max=-min, nticks=11, ticks=seq(min, max, len=nticks), title='', curwidth=10) {
@@ -110,8 +111,8 @@ plotideogram_2col_mutdensity <- function(filename, background=NULL, left=NULL, m
         #centro_start <- hg38[i,'centromerStart']
         #centro_end <- hg38[i,'centromerEnd']
         
-        centro_start <- centromere.coords[centromere.coords$chrom == paste('chr', chri, sep=''), 'start']
-        centro_end <- centromere.coords[centromere.coords$chrom == paste('chr', chri, sep=''), 'end']
+        centro_start <- centromere.coords[centromere.coords$chrom == paste('chr', chri, sep=''), 'chromStart']
+        centro_end <- centromere.coords[centromere.coords$chrom == paste('chr', chri, sep=''), 'chromEnd']
         print(centro_end)
         print(centro_start)
         print(barwidth)
@@ -203,8 +204,6 @@ plotideogram_2col_mutdensity <- function(filename, background=NULL, left=NULL, m
 ####################
 # Load dependencies
 ####################
-library(rCGH) # Load hg38 chromosomal info
-head(hg38)
 
 # Load centromere and telomere info
 
@@ -222,7 +221,7 @@ filenames_dss = c( fn_DSS_localized_benign, fn_DSS_adeno_localized)
 
 dss_data <- list()
 dss_data_gr <- list()
-# TODO: loop through to load DSS data
+
 for(fname in filenames_dss) {
     cur_data <- read.delim(fname, header=T, sep='\t', stringsAsFactors = F)
     cur_data <- cur_data[,c(1,2,3,8)]
@@ -246,15 +245,15 @@ samples.annovar <- unique(annovar_full$sample)
 samples.rm <- c("DTB-053-RP", "DTB-265-BL", "DTB-193-BL") # Remove the samples not included in WGBS
 samples.rm <- c(samples.rm, c('DTB-083-BL','DTB-126-BL')) # Remove hypermutated samples
 samples.annovar.final <- samples.annovar[-which(samples.annovar %in% samples.rm)]
-annovar_full <- annovar_full[-which(annovar_full$sample %in% samples.rm),]
+annovar_full_adjusted <- annovar_full[-which(annovar_full$sample %in% samples.rm),]
 length(unique(annovar_full$sample))
-allmuts_gr <- makeGRangesFromDataFrame(annovar_full)
+allmuts_gr <- makeGRangesFromDataFrame(annovar_full_adjusted)
 
 # Load blacklisted, poorly-mapped regions
 blacklist.regions <- read.delim(file=fn_gap, sep='\t', header=T)
 blacklist.regions <- blacklist.regions[,1:3]
-colnames(blacklist.regions)[1:3] <- c('chrom', 'start', 'end')
-blacklist.regions <- rbind.data.frame(blacklist.regions, centromere.coords) #exclude centromeres
+colnames(blacklist.regions)[1:3] <- c('chrom', 'chromStart', 'chromEnd')
+blacklist.regions <- rbind.data.frame(blacklist.regions, centromere.coords[,1:3]) #exclude centromeres
 colnames(blacklist.regions)[1:3] <- c('Chr', 'Start', 'End')
 blacklist.regions.gr <- makeGRangesFromDataFrame(blacklist.regions)
 
