@@ -6,9 +6,9 @@ Please direct correspondence related to this manuscript to Felix Feng, UCSF.
 
 ## Raw data
 
-Whole Genome Bisulfite Sequence data described in this study are available on the NCBI BioProject repository:
+Whole Genome Bisulfite Sequence data described in this study are available on the SRA repository:
 
-https://www.ncbi.nlm.nih.gov/bioproject/PRJNA479544
+https://trace.ncbi.nlm.nih.gov/Traces/study/?acc=phs001648
 
 Whole Genome DNA and RNA sequence data (previously reported) is available at the NCBI GDC repository:
 
@@ -21,5 +21,4 @@ Scripts used for the results reported in this paper are available through this g
 Additional data generated from the primary raw data that is required for the analysis described in the paper can be downloaded from:
 
 https://s3-us-west-2.amazonaws.com/feng.genomics/WGBS/secondary_data.zip
-
 
