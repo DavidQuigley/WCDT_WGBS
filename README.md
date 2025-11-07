@@ -2,7 +2,7 @@
 
 Shuang G. Zhao, William Chen, Haolong Li, et al. Nature Genetics 2020.
 
-Please direct correspondence related to this manuscript to Felix Feng, UCSF.
+Please direct correspondence related to this manuscript to David Quigley, UCSF.
 
 ## Raw data
 
